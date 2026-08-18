@@ -1,0 +1,292 @@
+/* =====================================================
+   GLOBALTALK
+   Premium Mobile App Design
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family:
+        "Segoe UI",
+        "Noto Sans Devanagari",
+        Arial,
+        sans-serif;
+
+    background: #101010;
+    color: #f5f0e8;
+
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+
+/* =====================================================
+   MAIN SCREEN
+   ===================================================== */
+
+.welcome-screen {
+    width: 100%;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    padding:
+        max(42px, env(safe-area-inset-top))
+        24px
+        max(24px, env(safe-area-inset-bottom));
+
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(212, 175, 122, 0.09),
+            transparent 32%
+        ),
+        #101010;
+
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* =====================================================
+   BRAND
+   ===================================================== */
+
+.brand-area {
+    text-align: center;
+    padding-top: 24px;
+}
+
+.brand-logo {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 14px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(212, 175, 122, 0.65);
+
+    border-radius: 22px;
+
+    font-size: 38px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(212, 175, 122, 0.16),
+            rgba(212, 175, 122, 0.04)
+        );
+
+    box-shadow:
+        0 0 35px rgba(212, 175, 122, 0.08);
+}
+
+.brand-area h1 {
+    font-size: 38px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -1.2px;
+}
+
+.brand-area h1 span {
+    color: #d4af7a;
+}
+
+.tagline {
+    margin-top: 8px;
+
+    color: #c7b99f;
+
+    font-size: 14px;
+    letter-spacing: 1.5px;
+}
+
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.welcome-content {
+    text-align: center;
+
+    max-width: 430px;
+
+    margin: auto auto 0;
+}
+
+.language-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 9px 15px;
+
+    border: 1px solid rgba(212, 175, 122, 0.22);
+
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.035);
+
+    color: #d8ccb8;
+
+    font-size: 13px;
+}
+
+.welcome-content h2 {
+    margin-top: 26px;
+
+    font-size: clamp(30px, 8vw, 43px);
+
+    line-height: 1.18;
+
+    font-weight: 700;
+
+    letter-spacing: -1px;
+}
+
+.welcome-content h2 span {
+    color: #d4af7a;
+}
+
+.description {
+    margin: 18px auto 0;
+
+    max-width: 360px;
+
+    color: #a9a39a;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+}
+
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.auth-buttons {
+    width: 100%;
+    max-width: 430px;
+
+    margin: 34px auto 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.auth-buttons button {
+    width: 100%;
+
+    min-height: 56px;
+
+    border-radius: 18px;
+
+    font-family: inherit;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+.primary-button {
+    border: 1px solid #d4af7a;
+
+    background: #d4af7a;
+
+    color: #17130d;
+
+    box-shadow:
+        0 10px 30px rgba(212, 175, 122, 0.14);
+}
+
+.secondary-button {
+    border: 1px solid rgba(212, 175, 122, 0.55);
+
+    background: transparent;
+
+    color: #f5f0e8;
+}
+
+.auth-buttons button:active {
+    transform: scale(0.98);
+    opacity: 0.85;
+}
+
+
+/* =====================================================
+   SECURITY NOTE
+   ===================================================== */
+
+.security-note {
+    margin: 24px auto 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    color: #77736d;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+/* =====================================================
+   LARGE SCREENS
+   ===================================================== */
+
+@media (min-width: 600px) {
+
+    .welcome-screen {
+        max-width: 480px;
+
+        margin: 0 auto;
+
+        min-height: 100vh;
+
+        border-left: 1px solid rgba(255,255,255,0.04);
+        border-right: 1px solid rgba(255,255,255,0.04);
+    }
+
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .auth-buttons button {
+        transition: none;
+    }
+
+}

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - GlobalTalk</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+    min-height:100vh;
+    font-family:Arial,"Segoe UI",sans-serif;
+    color:#f5f5f5;
+    background:
+        radial-gradient(circle at 50% -10%, rgba(212,175,55,.12), transparent 32%),
+        radial-gradient(circle at 0% 70%, rgba(212,175,55,.05), transparent 30%),
+        #080808;
+}
+.app{width:100%;max-width:460px;min-height:100vh;margin:auto;padding:40px 22px;}
+.brand{text-align:center;margin-bottom:30px;}
+.logo-box{width:70px;height:70px;margin:0 auto 14px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#1d1b16,#0d0d0d);border:1px solid rgba(212,175,55,.65);font-size:30px;}
+.brand-name{font-size:34px;font-weight:800;letter-spacing:-1px;}
+.brand-name span{color:#d4af37;}
+.tagline{margin-top:6px;color:#999;font-size:13px;}
+.card{background:linear-gradient(145deg,#131311,#0c0c0b);border:1px solid rgba(212,175,55,.18);border-radius:20px;padding:26px 20px;}
+input{width:100%;padding:14px 15px;margin-bottom:14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:#151512;color:#f5f5f5;outline:none;font-size:15px;}
+input::placeholder{color:#777;}
+.primary-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#d4af37,#b78e24);color:#111;font-weight:bold;font-size:15px;cursor:pointer;margin-top:6px;}
+.primary-btn:disabled{opacity:.5;cursor:not-allowed;}
+.divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:#666;font-size:12px;}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.1);}
+.google-btn{width:100%;padding:13px;border-radius:14px;background:#151512;border:1px solid rgba(255,255,255,.12);color:#eee;font-size:14px;font-weight:bold;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;}
+.msg{display:none;margin-top:14px;padding:12px;border-radius:10px;background:#151515;color:#aaa;font-size:13px;border:1px solid rgba(255,255,255,.06);}
+.msg.show{display:block;}
+.msg.error{color:#ff9a9a;border-color:rgba(255,80,80,.2);}
+.msg.success{color:#d4af37;}
+.footer-text{text-align:center;margin-top:22px;font-size:13px;color:#999;}
+.footer-text a{color:#d4af37;text-decoration:none;font-weight:bold;}
+</style>
+</head>
+<body>
+<div class="app">
+    <div class="brand">
+        <div class="logo-box">🌍</div>
+        <div class="brand-name">Global<span>Talk</span></div>
+        <div class="tagline">Connect. Translate. Talk.</div>
+    </div>
+
+    <div class="card">
+        <form id="loginForm">
+            <input type="email" id="emailInput" placeholder="Email" required autocomplete="username">
+            <input type="password" id="passwordInput" placeholder="Password" required autocomplete="current-password">
+            <button type="submit" class="primary-btn" id="loginBtn">Login करें</button>
+        </form>
+        <div class="divider">या</div>
+        <button type="button" class="google-btn" id="googleBtn">
+            <span>🔵</span> Google से Login करें
+        </button>
+        <div id="msg" class="msg"></div>
+    </div>
+
+    <div class="footer-text">
+        Account नहीं है? <a href="signup.html">नया Account बनाएँ</a>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const loginForm = document.getElementById("loginForm");
+const loginBtn = document.getElementById("loginBtn");
+const googleBtn = document.getElementById("googleBtn");
+const msg = document.getElementById("msg");
+
+function showMsg(text, type = "") {
+    msg.textContent = text;
+    msg.className = "msg show " + type;
+}
+
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("emailInput").value.trim();
+    const password = document.getElementById("passwordInput").value;
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Login हो रहा है...";
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login करें";
+        if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
+            showMsg("Email या Password गलत है।", "error");
+        } else {
+            showMsg("Login नहीं हो सका। दोबारा कोशिश करें।", "error");
+        }
+    }
+});
+
+googleBtn.addEventListener("click", async () => {
+    googleBtn.disabled = true;
+    googleBtn.textContent = "कृपया रुकें...";
+
+    try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        const userRef = doc(db, "users", user.uid);
+        const existing = await getDoc(userRef);
+
+        if (!existing.exists()) {
+            const counterRef = doc(db, "counters", "userIdCounter");
+            let baseUsername = (user.email.split("@")[0] || "user").toLowerCase().replace(/[^a-z0-9_]/g, "");
+            if (baseUsername.length < 3) baseUsername = "user" + Math.floor(Math.random() * 10000);
+
+            await runTransaction(db, async (transaction) => {
+                let username = baseUsername;
+                let usernameRef = doc(db, "usernames", username);
+                let usernameDoc = await transaction.get(usernameRef);
+
+                if (usernameDoc.exists()) {
+                    username = baseUsername + Math.floor(Math.random() * 9999);
+                    usernameRef = doc(db, "usernames", username);
+                }
+
+                const counterSnap = await transaction.get(counterRef);
+                let nextCount = 100001;
+                if (counterSnap.exists()) {
+                    nextCount = (counterSnap.data().count || 100000) + 1;
+                }
+                const uniqueUserId = "GT" + nextCount;
+
+                transaction.set(counterRef, { count: nextCount });
+                transaction.set(usernameRef, { uid: user.uid });
+
+                transaction.set(userRef, {
+                    uid: user.uid,
+                    name: user.displayName || "GlobalTalk User",
+                    email: user.email,
+                    username: username,
+                    uniqueUserId: uniqueUserId,
+                    country: "",
+                    preferredLanguage: "",
+                    authProvider: "google",
+                    emailVerified: true,
+                    accountStatus: "active",
+                    accountCreatedAt: serverTimestamp()
+                });
+
+                transaction.set(doc(db, "public_profiles", user.uid), {
+                    uid: user.uid,
+                    username: username,
+                    uniqueUserId: uniqueUserId,
+                    country: "",
+                    preferredLanguage: "",
+                    dpVisibility: "public",
+                    photoURL: user.photoURL || null,
+                    searchable: true
+                });
+            });
+        }
+
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        googleBtn.disabled = false;
+        googleBtn.textContent = "🔵 Google से Login करें";
+        showMsg("Google Login नहीं हो सका। दोबारा कोशिश करें।", "error");
+    }
+});
+</script>
+</body>
+</html>

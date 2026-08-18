@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - GlobalTalk</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #11110f;
+            color: #f5f0e8;
+            font-family: Arial, "Segoe UI", sans-serif;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 74px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 18px;
+            border-bottom: 1px solid rgba(212,175,122,.15);
+            background: #151512;
+        }
+
+        .back-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            border: 1px solid rgba(212,175,122,.35);
+            background: #1b1b18;
+            color: #f5f0e8;
+            font-size: 27px;
+            cursor: pointer;
+        }
+
+        .brand {
+            line-height: 1.1;
+        }
+
+        .brand-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .brand-title span {
+            color: #d4af7a;
+        }
+
+        .brand-subtitle {
+            color: #9d988f;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .page {
+            width: min(100%, 560px);
+            margin: auto;
+            padding: 28px 18px 40px;
+        }
+
+        .profile-card {
+            background: linear-gradient(145deg, #1b1b18, #141412);
+            border: 1px solid rgba(212,175,122,.18);
+            border-radius: 28px;
+            padding: 28px 20px;
+            box-shadow: 0 15px 45px rgba(0,0,0,.25);
+        }
+
+        .avatar {
+            width: 105px;
+            height: 105px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            border: 3px solid #d4af7a;
+            background: #282824;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-size: 42px;
+            color: #d4af7a;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .name {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+
+        .username {
+            text-align: center;
+            color: #d4af7a;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .user-id {
+            text-align: center;
+            color: #8f8b84;
+            font-size: 13px;
+            margin-bottom: 28px;
+        }
+
+        .verified {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #d4af7a;
+            font-size: 13px;
+        }
+
+        .info-box {
+            background: #191916;
+            border: 1px solid rgba(255,255,255,.06);
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .label {
+            color: #89857d;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .value {
+            font-size: 16px;
+            color: #f1eee7;
+            word-break: break-word;
+        }
+
+        .actions {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(212,175,122,.35);
+            background: #d4af7a;
+            color: #171613;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: #e8e4dc;
+        }
+
+        .state {
+            min-height: 55vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .state-box {
+            padding: 28px;
+            max-width: 360px;
+        }
+
+        .loader {
+            width: 42px;
+            height: 42px;
+            border: 3px solid rgba(212,175,122,.2);
+            border-top-color: #d4af7a;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto 18px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .message-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .message-text {
+            color: #99958d;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .error {
+            color: #ff8d8d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <button class="back-btn" id="backBtn" aria-label="Back">‹</button>
+
+        <div class="brand">
+            <div class="brand-title">Global<span>Talk</span></div>
+            <div class="brand-subtitle">Connect. Translate. Talk.</div>
+        </div>
+    </header>
+
+    <!-- Loading -->
+    <section id="loadingState" class="state">
+        <div class="state-box">
+            <div class="loader"></div>
+            <div>Profile सुरक्षित रूप से लोड हो रही है...</div>
+        </div>
+    </section>
+
+    <!-- Login required -->
+    <section id="loginState" class="state hidden">
+        <div class="state-box">
+            <div class="message-title">🔐 Login आवश्यक है</div>
+            <div class="message-text">
+                अपना GlobalTalk Profile देखने के लिए पहले अपने account में login करें।
+            </div>
+
+            <button class="action-btn" id="loginBtn">
+                Login करें
+            </button>
+        </div>
+    </section>
+
+    <!-- Error -->
+    <section id="errorState" class="state hidden">
+        <div class="state-box">
+            <div class="message-title">Profile लोड नहीं हो सकी</div>
+            <div id="errorText" class="message-text error"></div>
+
+            <button class="action-btn" onclick="location.reload()">
+                फिर से कोशिश करें
+            </button>
+        </div>
+    </section>
+
+    <!-- Profile -->
+    <main id="profileState" class="page hidden">
+
+        <div class="profile-card">
+
+            <div class="avatar" id="avatar">
+                GT
+            </div>
+
+            <div class="name" id="name">GlobalTalk User</div>
+
+            <div class="username" id="username">
+                @username
+            </div>
+
+            <div class="user-id" id="uniqueUserId">
+                GlobalTalk ID
+            </div>
+
+            <div style="text-align:center;">
+                <span class="verified" id="verificationStatus">
+                    ● Account
+                </span>
+            </div>
+
+            <div class="info-box">
+                <div class="label">Country</div>
+                <div class="value" id="country">—</div>
+            </div>
+
+            <div class="info-box">
+                <div class="label">Preferred Language</div>
+                <div class="value" id="language">—</div>
+            </div>
+
+            <div class="info-box">
+                <div class="label">Email</div>
+                <div class="value" id="email">—</div>
+            </div>
+
+            <div class="actions">
+                <button class="action-btn">
+                    ✏️ Edit Profile
+                </button>
+
+                <button class="action-btn logout-btn" id="logoutBtn">
+                    Logout
+                </button>
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script type="module">
+
+        import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+
+        import {
+            getAuth,
+            onAuthStateChanged,
+            signOut
+        }
+        from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+
+        import {
+            getFirestore,
+            doc,
+            getDoc
+        }
+        from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+            authDomain: "globaltalk-87e19.firebaseapp.com",
+            projectId: "globaltalk-87e19",
+            storageBucket: "globaltalk-87e19.firebasestorage.app",
+            messagingSenderId: "223736450793",
+            appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+        };
+
+
+        const app = initializeApp(firebaseConfig);
+
+        const auth = getAuth(app);
+
+        const db = getFirestore(app);
+
+
+        // Elements
+        const loadingState = document.getElementById("loadingState");
+        const loginState = document.getElementById("loginState");
+        const profileState = document.getElementById("profileState");
+        const errorState = document.getElementById("errorState");
+
+        const errorText = document.getElementById("errorText");
+
+
+        function hideAllStates() {
+
+            loadingState.classList.add("hidden");
+            loginState.classList.add("hidden");
+            profileState.classList.add("hidden");
+            errorState.classList.add("hidden");
+
+        }
+
+
+        // Back
+        document.getElementById("backBtn").addEventListener("click", () => {
+
+            if (history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = "dashboard.html";
+            }
+
+        });
+
+
+        // Login
+        document.getElementById("loginBtn").addEventListener("click", () => {
+
+            window.location.href = "login.html";
+
+        });
+
+
+        // Logout
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+
+            const button = document.getElementById("logoutBtn");
+
+            button.disabled = true;
+            button.textContent = "Logout हो रहा है...";
+
+            try {
+
+                await signOut(auth);
+
+                window.location.href = "login.html";
+
+            } catch (error) {
+
+                button.disabled = false;
+                button.textContent = "Logout";
+
+                alert("Logout नहीं हो सका। फिर से कोशिश करें।");
+
+            }
+
+        });
+
+
+        // Auth State
+        onAuthStateChanged(auth, async (user) => {
+
+            // User login नहीं है
+            if (!user) {
+
+                hideAllStates();
+
+                loginState.classList.remove("hidden");
+
+                return;
+
+            }
+
+
+            // User login है
+            try {
+
+                const uid = user.uid;
+
+                // केवल अपने UID वाला document पढ़ना
+                const userRef = doc(db, "users", uid);
+
+                const userSnap = await getDoc(userRef);
+
+
+                if (!userSnap.exists()) {
+
+                    hideAllStates();
+
+                    errorText.textContent =
+                        "आपका account मौजूद है, लेकिन profile data नहीं मिला।";
+
+                    errorState.classList.remove("hidden");
+
+                    return;
+
+                }
+
+
+                const data = userSnap.data();
+
+
+                // Profile information
+                document.getElementById("name").textContent =
+                    data.name || "GlobalTalk User";
+
+
+                document.getElementById("username").textContent =
+                    data.username ? "@" + data.username : "@username";
+
+
+                document.getElementById("uniqueUserId").textContent =
+                    data.uniqueUserId
+                        ? "GlobalTalk ID: " + data.uniqueUserId
+                        : "GlobalTalk ID";
+
+
+                document.getElementById("country").textContent =
+                    data.country || "Not specified";
+
+
+                document.getElementById("language").textContent =
+                    data.preferredLanguage || "Not specified";
+
+
+                // Email केवल अपने profile में दिख रहा है
+                document.getElementById("email").textContent =
+                    user.email || "Not available";
+
+
+                // Avatar
+                const avatar = document.getElementById("avatar");
+
+                if (user.photoURL) {
+
+                    avatar.innerHTML =
+                        `<img src="${escapeHTML(user.photoURL)}" alt="Profile photo">`;
+
+                } else {
+
+                    const firstLetter =
+                        (data.name || "G").charAt(0).toUpperCase();
+
+                    avatar.textContent = firstLetter;
+
+                }
+
+
+                // Verification
+                const verification =
+                    document.getElementById("verificationStatus");
+
+
+                if (user.emailVerified) {
+
+                    verification.textContent = "✓ Email Verified";
+
+                } else {
+
+                    verification.textContent = "● Email Not Verified";
+
+                }
+
+
+                hideAllStates();
+
+                profileState.classList.remove("hidden");
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                hideAllStates();
+
+                errorText.textContent =
+                    "Profile data पढ़ने में समस्या आई। Firestore Security Rules और Firebase login जांचें।";
+
+                errorState.classList.remove("hidden");
+
+            }
+
+        });
+
+
+        // Basic HTML escaping
+        function escapeHTML(value) {
+
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacts - GlobalTalk</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+    min-height:100vh;
+    background:radial-gradient(circle at top left,rgba(212,175,55,.10),transparent 35%),#090909;
+    color:#f5f5f5;
+    font-family:Arial,Helvetica,sans-serif;
+}
+.app{width:100%;max-width:700px;min-height:100vh;margin:auto;padding-bottom:90px;}
+
+/* Header */
+.header{
+    position:sticky;top:0;z-index:10;
+    padding:22px 18px 0;
+    background:rgba(9,9,9,.94);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+.brand{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.brand h1{font-size:25px;letter-spacing:.5px;}
+.brand h1 span{color:#d4af37;}
+.profile-btn{
+    width:40px;height:40px;border-radius:50%;
+    border:1px solid rgba(212,175,55,.45);
+    background:#151515;color:#d4af37;
+    cursor:pointer;font-weight:bold;font-size:15px;
+}
+
+/* Search */
+.search-box{
+    display:flex;align-items:center;gap:10px;
+    background:#151515;border:1px solid rgba(255,255,255,.08);
+    border-radius:15px;padding:5px 7px 5px 15px;margin-bottom:14px;
+}
+.search-box input{
+    flex:1;border:none;outline:none;background:transparent;
+    color:white;font-size:15px;min-width:0;
+}
+.search-box input::placeholder{color:#777;}
+.search-btn{
+    border:none;background:#d4af37;color:#080808;
+    border-radius:11px;padding:11px 15px;font-weight:bold;cursor:pointer;
+}
+.search-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;padding-bottom:12px;}
+.tab-btn{
+    flex:1;padding:10px 6px;text-align:center;border-radius:11px;
+    background:#141414;color:#999;font-size:13px;font-weight:bold;
+    border:1px solid rgba(255,255,255,.06);cursor:pointer;position:relative;
+}
+.tab-btn.active{background:#d4af37;color:#080808;}
+.tab-badge{
+    position:absolute;top:-6px;right:-6px;
+    background:#e74c3c;color:#fff;font-size:10px;
+    border-radius:50%;padding:2px 6px;min-width:18px;
+}
+
+/* Content */
+.content{padding:20px 16px;}
+.hint{color:#777;font-size:13px;margin-bottom:18px;line-height:1.5;}
+.hint b{color:#d4af37;}
+
+/* Message */
+.message{
+    display:none;padding:14px;border-radius:12px;margin-bottom:15px;
+    background:#151515;color:#bbb;font-size:14px;
+}
+.message.show{display:block;}
+.message.error{color:#ff8d8d;border:1px solid rgba(255,80,80,.2);}
+.message.success{color:#d4af37;border:1px solid rgba(212,175,55,.2);}
+
+/* Cards */
+.result-card{
+    display:flex;align-items:center;gap:13px;padding:14px;margin-bottom:12px;
+    background:linear-gradient(145deg,#171717,#101010);
+    border:1px solid rgba(255,255,255,.07);border-radius:17px;
+}
+.avatar{
+    width:54px;height:54px;flex:0 0 54px;border-radius:50%;
+    background:linear-gradient(135deg,#d4af37,#7d621b);
+    display:flex;align-items:center;justify-content:center;
+    color:#111;font-size:19px;font-weight:bold;overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:16px;font-weight:bold;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.username{color:#d4af37;font-size:13px;margin-bottom:4px;}
+.country{color:#777;font-size:12px;}
+.action-row{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+
+/* Buttons */
+.connect-btn,.accept-btn,.reject-btn,.call-btn,.chat-btn{
+    border:none;padding:8px 12px;border-radius:9px;
+    font-weight:bold;cursor:pointer;font-size:12px;white-space:nowrap;
+}
+.connect-btn{border:1px solid rgba(212,175,55,.45);background:transparent;color:#d4af37;}
+.connect-btn:disabled,.accept-btn:disabled,.reject-btn:disabled{opacity:.5;cursor:not-allowed;}
+.accept-btn,.call-btn{background:#d4af37;color:#080808;}
+.reject-btn{background:transparent;color:#ff8d8d;border:1px solid rgba(255,80,80,.3);}
+.chat-btn{background:transparent;color:#d4af37;border:1px solid rgba(212,175,55,.4);}
+.status-text{font-size:12px;color:#888;text-align:center;}
+
+/* Empty */
+.empty{text-align:center;padding:65px 20px;color:#666;}
+.empty-icon{font-size:42px;margin-bottom:14px;opacity:.7;}
+.empty-title{color:#aaa;font-size:17px;margin-bottom:7px;}
+
+/* Bottom Nav */
+.bottom-nav{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:700px;height:72px;
+    background:rgba(14,14,14,.96);backdrop-filter:blur(15px);
+    border-top:1px solid rgba(255,255,255,.07);
+    display:flex;justify-content:space-around;align-items:center;z-index:20;
+}
+.nav-item{color:#666;text-decoration:none;text-align:center;font-size:11px;min-width:65px;}
+.nav-item .icon{display:block;font-size:21px;margin-bottom:4px;}
+.nav-item.active{color:#d4af37;}
+
+@media(max-width:480px){
+    .result-card{padding:12px;}
+    .connect-btn,.accept-btn,.reject-btn,.call-btn,.chat-btn{padding:8px 9px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="header">
+    <div class="brand">
+        <h1>Global<span>Talk</span></h1>
+        <button class="profile-btn" id="profileBtn" type="button">P</button>
+    </div>
+
+    <div class="search-box">
+        <input id="searchInput" type="text" maxlength="30" autocomplete="off"
+               placeholder="Username या GT ID खोजें">
+        <button id="searchBtn" class="search-btn" type="button">Search</button>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="tabSearch" type="button">Search</button>
+        <button class="tab-btn" id="tabRequests" type="button">
+            Requests
+            <span class="tab-badge" id="requestBadge" style="display:none;">0</span>
+        </button>
+        <button class="tab-btn" id="tabConnections" type="button">Connections</button>
+    </div>
+</header>
+
+<main class="content">
+    <div id="message" class="message"></div>
+
+    <!-- SEARCH TAB -->
+    <div id="searchTab">
+        <p class="hint">
+            Username या GlobalTalk ID जैसे <b>GT100001</b> से किसी व्यक्ति को खोजें।
+        </p>
+        <div id="searchResults"></div>
+        <div id="searchEmptyState" class="empty">
+            <div class="empty-icon">⌕</div>
+            <div class="empty-title">किसी व्यक्ति को खोजें</div>
+            <p>Connect करने के लिए ऊपर Search का इस्तेमाल करें।</p>
+        </div>
+    </div>
+
+    <!-- REQUESTS TAB -->
+    <div id="requestsTab" style="display:none;">
+        <p class="hint">यहां वो लोग दिखेंगे जिन्होंने आपको Connect Request भेजी है।</p>
+        <div id="requestsList"></div>
+        <div id="requestsEmptyState" class="empty" style="display:none;">
+            <div class="empty-icon">🔔</div>
+            <div class="empty-title">कोई नई Request नहीं है</div>
+        </div>
+    </div>
+
+    <!-- CONNECTIONS TAB -->
+    <div id="connectionsTab" style="display:none;">
+        <p class="hint">आपके सभी accepted connections यहां दिखेंगे।</p>
+        <div id="connectionsList"></div>
+        <div id="connectionsEmptyState" class="empty" style="display:none;">
+            <div class="empty-icon">👥</div>
+            <div class="empty-title">अभी कोई Connection नहीं है</div>
+            <p>Search करके नए लोगों से जुड़ें।</p>
+        </div>
+    </div>
+</main>
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><span class="icon">◉</span>Chats</a>
+    <a href="contacts.html" class="nav-item active"><span class="icon">♧</span>Contacts</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">⌕</span>Calls</a>
+    <a href="profile.html" class="nav-item"><span class="icon">●</span>Profile</a>
+</nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import {
+    getFirestore, collection, query, where, limit, getDocs, getDoc, doc,
+    setDoc, updateDoc, deleteDoc, serverTimestamp, onSnapshot, orderBy
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Elements
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const searchResults = document.getElementById("searchResults");
+const searchEmptyState = document.getElementById("searchEmptyState");
+const messageEl = document.getElementById("message");
+const profileBtn = document.getElementById("profileBtn");
+const tabSearch = document.getElementById("tabSearch");
+const tabRequests = document.getElementById("tabRequests");
+const tabConnections = document.getElementById("tabConnections");
+const searchTab = document.getElementById("searchTab");
+const requestsTab = document.getElementById("requestsTab");
+const connectionsTab = document.getElementById("connectionsTab");
+const requestsList = document.getElementById("requestsList");
+const requestsEmptyState = document.getElementById("requestsEmptyState");
+const connectionsList = document.getElementById("connectionsList");
+const connectionsEmptyState = document.getElementById("connectionsEmptyState");
+const requestBadge = document.getElementById("requestBadge");
+
+let currentUser = null;
+let unsubRequests = null;
+let unsubConnections = null;
+
+// ========== Helpers ==========
+function escapeHTML(str) {
+    const d = document.createElement("div");
+    d.textContent = str ?? "";
+    return d.innerHTML;
+}
+
+function showMessage(text, type = "") {
+    messageEl.textContent = text;
+    messageEl.className = "message show " + type;
+}
+
+function hideMessage() {
+    messageEl.textContent = "";
+    messageEl.className = "message";
+}
+
+function getInitial(name) {
+    return (String(name || "?").trim().charAt(0) || "?").toUpperCase();
+}
+
+function createAvatar(profile) {
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    if (profile.photoURL && profile.dpVisibility !== "private") {
+        const img = document.createElement("img");
+        img.src = profile.photoURL;
+        img.loading = "lazy";
+        img.alt = profile.username || "User";
+        avatar.appendChild(img);
+    } else {
+        avatar.textContent = getInitial(profile.name || profile.username);
+    }
+    return avatar;
+}
+
+function createUserInfo(profile) {
+    const info = document.createElement("div");
+    info.className = "user-info";
+    info.innerHTML = `
+        <div class="user-name">${escapeHTML(profile.name || profile.username || "GlobalTalk User")}</div>
+        <div class="username">${profile.username ? "@" + escapeHTML(profile.username) : ""}</div>
+        <div class="country">${escapeHTML(profile.country || "")}</div>
+    `;
+    return info;
+}
+
+// Connection document ID (sorted so both users get same ID)
+function getConnectionId(uid1, uid2) {
+    return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+}
+
+// ========== Tabs ==========
+function switchTab(tab) {
+    [tabSearch, tabRequests, tabConnections].forEach(b => b.classList.remove("active"));
+    [searchTab, requestsTab, connectionsTab].forEach(s => s.style.display = "none");
+    hideMessage();
+
+    if (tab === "search") {
+        tabSearch.classList.add("active");
+        searchTab.style.display = "block";
+    } else if (tab === "requests") {
+        tabRequests.classList.add("active");
+        requestsTab.style.display = "block";
+    } else {
+        tabConnections.classList.add("active");
+        connectionsTab.style.display = "block";
+    }
+}
+
+tabSearch.addEventListener("click", () => switchTab("search"));
+tabRequests.addEventListener("click", () => switchTab("requests"));
+tabConnections.addEventListener("click", () => switchTab("connections"));
+profileBtn.addEventListener("click", () => window.location.href = "profile.html");
+
+// ========== Auth ==========
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    currentUser = user;
+    listenRequests();
+    listenConnections();
+});
+
+// ========== Search ==========
+searchBtn.addEventListener("click", searchUsers);
+searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") searchUsers();
+});
+
+async function searchUsers() {
+    hideMessage();
+    searchResults.innerHTML = "";
+    searchEmptyState.style.display = "none";
+
+    const raw = searchInput.value.trim();
+    if (!raw) {
+        searchEmptyState.style.display = "block";
+        return;
+    }
+    if (!currentUser) {
+        showMessage("पहले Login करें।", "error");
+        return;
+    }
+
+    searchBtn.disabled = true;
+    searchBtn.textContent = "...";
+
+    try {
+        const value = raw.toLowerCase();
+        let found = [];
+
+        // Search by username
+        const usernameSnap = await getDocs(query(
+            collection(db, "public_profiles"),
+            where("username", "==", value),
+            limit(10)
+        ));
+        usernameSnap.forEach(item => {
+            const data = item.data();
+            if (data.searchable !== false && data.uid !== currentUser.uid) {
+                found.push({ uid: data.uid || item.id, ...data });
+            }
+        });
+
+        // Search by GT ID if nothing found
+        if (found.length === 0) {
+            const idSnap = await getDocs(query(
+                collection(db, "public_profiles"),
+                where("uniqueUserId", "==", raw.toUpperCase()),
+                limit(10)
+            ));
+            idSnap.forEach(item => {
+                const data = item.data();
+                if (data.searchable !== false && data.uid !== currentUser.uid) {
+                    found.push({ uid: data.uid || item.id, ...data });
+                }
+            });
+        }
+
+        if (found.length === 0) {
+            searchEmptyState.innerHTML = `
+                <div class="empty-icon">⌕</div>
+                <div class="empty-title">User नहीं मिला</div>
+                <p>Username या GT ID सही से जांचें।</p>
+            `;
+            searchEmptyState.style.display = "block";
+            return;
+        }
+
+        for (const profile of found) {
+            const status = await getConnectionStatus(currentUser.uid, profile.uid);
+            searchResults.appendChild(createSearchCard(profile, status));
+        }
+
+    } catch (err) {
+        console.error(err);
+        showMessage("Search करते समय समस्या आई।", "error");
+    } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = "Search";
+    }
+}
+
+async function getConnectionStatus(myUid, otherUid) {
+    const connId = getConnectionId(myUid, otherUid);
+    const snap = await getDoc(doc(db, "connections", connId));
+    if (!snap.exists()) return "none";
+    const data = snap.data();
+    if (data.status === "accepted") return "accepted";
+    if (data.status === "pending") {
+        return data.fromUid === myUid ? "sent" : "received";
+    }
+    return "none";
+}
+
+function createSearchCard(profile, status) {
+    const card = document.createElement("div");
+    card.className = "result-card";
+    card.appendChild(createAvatar(profile));
+    card.appendChild(createUserInfo(profile));
+
+    const action = document.createElement("div");
+    action.className = "action-row";
+
+    if (status === "none") {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "connect-btn";
+        btn.textContent = "Connect";
+        btn.addEventListener("click", () => sendConnectionRequest(profile.uid, btn));
+        action.appendChild(btn);
+    } else if (status === "sent") {
+        const text = document.createElement("div");
+        text.className = "status-text";
+        text.textContent = "Request भेजी गई";
+        action.appendChild(text);
+    } else if (status === "received") {
+        const text = document.createElement("div");
+        text.className = "status-text";
+        text.textContent = "Request आई है";
+        action.appendChild(text);
+    } else if (status === "accepted") {
+        const chatBtn = document.createElement("button");
+        chatBtn.type = "button";
+        chatBtn.className = "chat-btn";
+        chatBtn.textContent = "Chat";
+        chatBtn.addEventListener("click", () => {
+            window.location.href = "chat.html?peer=" + profile.uid;
+        });
+        action.appendChild(chatBtn);
+    }
+
+    card.appendChild(action);
+    return card;
+}
+
+// ========== Send Request ==========
+async function sendConnectionRequest(toUid, button) {
+    if (!currentUser) return;
+    button.disabled = true;
+    button.textContent = "...";
+
+    try {
+        const connId = getConnectionId(currentUser.uid, toUid);
+        const connRef = doc(db, "connections", connId);
+        const existing = await getDoc(connRef);
+
+        if (existing.exists()) {
+            showMessage("Connection पहले से मौजूद है।", "error");
+            button.disabled = false;
+            button.textContent = "Connect";
+            return;
+        }
+
+        await setDoc(connRef, {
+            fromUid: currentUser.uid,
+            toUid: toUid,
+            status: "pending",
+            createdAt: serverTimestamp(),
+            participants: [currentUser.uid, toUid]
+        });
+
+        button.textContent = "भेजी गई";
+        showMessage("Connect Request भेज दी गई।", "success");
+
+    } catch (err) {
+        console.error(err);
+        showMessage("Request नहीं भेज सके।", "error");
+        button.disabled = false;
+        button.textContent = "Connect";
+    }
+}
+
+// ========== Listen Incoming Requests ==========
+function listenRequests() {
+    if (unsubRequests) unsubRequests();
+
+    const q = query(
+        collection(db, "connections"),
+        where("toUid", "==", currentUser.uid),
+        where("status", "==", "pending")
+    );
+
+    unsubRequests = onSnapshot(q, async (snapshot) => {
+        requestsList.innerHTML = "";
+        const count = snapshot.size;
+
+        if (count > 0) {
+            requestBadge.style.display = "inline";
+            requestBadge.textContent = count > 9 ? "9+" : count;
+        } else {
+            requestBadge.style.display = "none";
+        }
+
+        if (snapshot.empty) {
+            requestsEmptyState.style.display = "block";
+            return;
+        }
+        requestsEmptyState.style.display = "none";
+
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const profileSnap = await getDoc(doc(db, "public_profiles", data.fromUid));
+            const profile = profileSnap.exists() ? profileSnap.data() : { uid: data.fromUid, username: "User" };
+            profile.uid = data.fromUid;
+
+            requestsList.appendChild(createRequestCard(profile, docSnap.id));
+        }
+    }, (err) => {
+        console.error(err);
+        requestsEmptyState.style.display = "block";
+    });
+}
+
+function createRequestCard(profile, connId) {
+    const card = document.createElement("div");
+    card.className = "result-card";
+    card.appendChild(createAvatar(profile));
+    card.appendChild(createUserInfo(profile));
+
+    const action = document.createElement("div");
+    action.className = "action-row";
+
+    const acceptBtn = document.createElement("button");
+    acceptBtn.type = "button";
+    acceptBtn.className = "accept-btn";
+    acceptBtn.textContent = "Accept";
+    acceptBtn.addEventListener("click", () => respondRequest(connId, "accepted", acceptBtn));
+
+    const rejectBtn = document.createElement("button");
+    rejectBtn.type = "button";
+    rejectBtn.className = "reject-btn";
+    rejectBtn.textContent = "Reject";
+    rejectBtn.addEventListener("click", () => respondRequest(connId, "rejected", rejectBtn));
+
+    action.appendChild(acceptBtn);
+    action.appendChild(rejectBtn);
+    card.appendChild(action);
+    return card;
+}
+
+async function respondRequest(connId, status, button) {
+    button.disabled = true;
+    try {
+        if (status === "accepted") {
+            await updateDoc(doc(db, "connections", connId), {
+                status: "accepted",
+                acceptedAt: serverTimestamp()
+            });
+            showMessage("Connection स्वीकार कर लिया गया।", "success");
+        } else {
+            await deleteDoc(doc(db, "connections", connId));
+            showMessage("Request अस्वीकार कर दी गई।", "success");
+        }
+    } catch (err) {
+        console.error(err);
+        showMessage("कार्रवाई पूरी नहीं हो सकी।", "error");
+        button.disabled = false;
+    }
+}
+
+// ========== Listen Connections ==========
+function listenConnections() {
+    if (unsubConnections) unsubConnections();
+
+    const q = query(
+        collection(db, "connections"),
+        where("participants", "array-contains", currentUser.uid),
+        where("status", "==", "accepted")
+    );
+
+    unsubConnections = onSnapshot(q, async (snapshot) => {
+        connectionsList.innerHTML = "";
+
+        if (snapshot.empty) {
+            connectionsEmptyState.style.display = "block";
+            return;
+        }
+        connectionsEmptyState.style.display = "none";
+
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const otherUid = data.participants.find(uid => uid !== currentUser.uid);
+            if (!otherUid) continue;
+
+            const profileSnap = await getDoc(doc(db, "public_profiles", otherUid));
+            const profile = profileSnap.exists() ? profileSnap.data() : { uid: otherUid, username: "User" };
+            profile.uid = otherUid;
+
+            connectionsList.appendChild(createConnectionCard(profile));
+        }
+    }, (err) => {
+        console.error(err);
+        connectionsEmptyState.style.display = "block";
+    });
+}
+
+function createConnectionCard(profile) {
+    const card = document.createElement("div");
+    card.className = "result-card";
+    card.appendChild(createAvatar(profile));
+    card.appendChild(createUserInfo(profile));
+
+    const action = document.createElement("div");
+    action.className = "action-row";
+
+    const chatBtn = document.createElement("button");
+    chatBtn.type = "button";
+    chatBtn.className = "chat-btn";
+    chatBtn.textContent = "Chat";
+    chatBtn.addEventListener("click", () => {
+        window.location.href = "chat.html?peer=" + profile.uid;
+    });
+
+    const callBtn = document.createElement("button");
+    callBtn.type = "button";
+    callBtn.className = "call-btn";
+    callBtn.textContent = "Call";
+    callBtn.addEventListener("click", () => {
+        window.location.href = "call.html?peer=" + profile.uid + "&role=caller";
+    });
+
+    action.appendChild(chatBtn);
+    action.appendChild(callBtn);
+    card.appendChild(action);
+    return card;
+}
+</script>
+</body>
+</html>

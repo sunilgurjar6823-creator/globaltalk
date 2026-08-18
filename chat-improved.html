@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat - GlobalTalk</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+    --bg:#090909;
+    --panel:#11110f;
+    --panel2:#171714;
+    --gold:#d4af37;
+    --gold2:#f0cf6a;
+    --text:#f5f1e8;
+    --muted:#8e8b84;
+    --border:rgba(212,175,55,.16);
+    --danger:#e56b6b;
+    --success:#8fd18f;
+}
+body{
+    min-height:100vh;
+    background:radial-gradient(circle at 20% 0%,rgba(212,175,55,.10),transparent 35%),var(--bg);
+    color:var(--text);
+    font-family:Arial,"Segoe UI",sans-serif;
+}
+.app{width:100%;max-width:760px;min-height:100vh;margin:auto;position:relative;padding-bottom:100px;}
+
+/* HEADER */
+.chat-header{
+    position:sticky;top:0;z-index:30;height:74px;
+    display:flex;align-items:center;gap:12px;padding:10px 14px;
+    background:rgba(9,9,9,.94);backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(255,255,255,.07);
+}
+.back-btn{
+    width:44px;height:44px;flex:0 0 44px;
+    border:1px solid var(--border);border-radius:14px;
+    background:#151512;color:var(--gold2);
+    font-size:28px;line-height:1;cursor:pointer;
+}
+.avatar{
+    width:45px;height:45px;flex:0 0 45px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:linear-gradient(135deg,var(--gold2),#76591a);
+    color:#111;font-weight:800;font-size:17px;
+}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.user-info{min-width:0;flex:1;}
+.user-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-status{margin-top:4px;font-size:12px;color:var(--muted);}
+.user-status.online{color:var(--success);}
+.header-actions{display:flex;gap:7px;}
+.header-btn{
+    width:40px;height:40px;border-radius:12px;border:1px solid var(--border);
+    background:#151512;color:var(--gold2);cursor:pointer;font-size:17px;
+}
+
+/* LANGUAGE BAR */
+.language-bar{
+    position:sticky;top:74px;z-index:20;
+    display:flex;gap:8px;padding:9px 12px;
+    background:rgba(17,17,15,.96);backdrop-filter:blur(15px);
+    border-bottom:1px solid rgba(255,255,255,.05);
+}
+.language-box{flex:1;min-width:0;}
+.language-label{display:block;color:#77746d;font-size:10px;margin:0 0 4px 3px;}
+.language-select{
+    width:100%;padding:9px 8px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.08);background:#151512;color:#eee;
+    outline:none;font-size:12px;
+}
+
+/* STATUS */
+.status-area{padding:10px 15px 0;}
+.status-message{
+    display:none;padding:10px 12px;border-radius:10px;
+    background:#151515;color:#aaa;font-size:12px;
+    border:1px solid rgba(255,255,255,.06);
+}
+.status-message.show{display:block;}
+.status-message.error{color:#ff9a9a;border-color:rgba(255,80,80,.2);}
+.status-message.success{color:var(--gold2);}
+
+/* MESSAGES */
+.messages{
+    min-height:calc(100vh - 280px);padding:18px 14px 25px;
+    display:flex;flex-direction:column;gap:10px;
+}
+.empty-chat{margin:auto;text-align:center;max-width:320px;color:#686761;}
+.empty-chat-icon{font-size:44px;margin-bottom:12px;opacity:.65;}
+.empty-chat-title{color:#aaa69d;font-size:17px;margin-bottom:7px;}
+.empty-chat p{font-size:13px;line-height:1.5;}
+
+.message-row{display:flex;width:100%;}
+.message-row.mine{justify-content:flex-end;}
+.message-row.theirs{justify-content:flex-start;}
+.message-bubble{
+    max-width:min(78%,520px);padding:10px 13px 8px;border-radius:18px;
+    position:relative;word-wrap:break-word;overflow-wrap:anywhere;
+}
+.mine .message-bubble{
+    background:linear-gradient(135deg,#d4af37,#b78e24);color:#111;
+    border-bottom-right-radius:5px;
+}
+.theirs .message-bubble{
+    background:#1a1a17;color:#eee;
+    border:1px solid rgba(255,255,255,.07);border-bottom-left-radius:5px;
+}
+.message-text{font-size:15px;line-height:1.45;white-space:pre-wrap;}
+.message-meta{
+    display:flex;align-items:center;justify-content:flex-end;gap:6px;
+    margin-top:5px;font-size:9px;opacity:.65;
+}
+.translation{
+    margin-top:8px;padding-top:8px;
+    border-top:1px solid rgba(255,255,255,.15);
+    font-size:12px;line-height:1.4;opacity:.9;
+}
+.translation-label{font-size:9px;opacity:.65;margin-bottom:3px;}
+
+/* TYPING */
+.typing{display:none;padding:0 15px 8px;}
+.typing.show{display:block;}
+.typing-bubble{
+    display:inline-flex;align-items:center;gap:4px;padding:9px 12px;
+    background:#171714;border:1px solid rgba(255,255,255,.06);border-radius:14px;
+}
+.dot{width:5px;height:5px;border-radius:50%;background:#aaa;animation:typing 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.2s;}
+.dot:nth-child(3){animation-delay:.4s;}
+@keyframes typing{
+    0%,60%,100%{transform:translateY(0);opacity:.4;}
+    30%{transform:translateY(-4px);opacity:1;}
+}
+
+/* COMPOSER */
+.composer-wrap{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:760px;z-index:40;padding:10px 12px 12px;
+    background:rgba(9,9,9,.96);backdrop-filter:blur(18px);
+    border-top:1px solid rgba(255,255,255,.07);
+}
+.composer{display:flex;align-items:flex-end;gap:8px;}
+.composer-btn{
+    width:43px;height:43px;flex:0 0 43px;border-radius:13px;
+    border:1px solid var(--border);background:#151512;color:var(--gold2);
+    cursor:pointer;font-size:18px;
+}
+.composer-btn.recording{background:#e74c3c;color:#fff;border-color:#e74c3c;}
+.message-input{
+    flex:1;min-width:0;max-height:110px;resize:none;border-radius:15px;
+    border:1px solid rgba(255,255,255,.09);background:#151512;color:#f5f1e8;
+    outline:none;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.4;
+}
+.message-input::placeholder{color:#696761;}
+.send-btn{
+    width:45px;height:45px;flex:0 0 45px;border:none;border-radius:14px;
+    background:var(--gold);color:#111;font-size:18px;font-weight:bold;cursor:pointer;
+}
+.send-btn:disabled{opacity:.45;cursor:not-allowed;}
+.composer-hint{text-align:center;color:#55534d;font-size:9px;margin-top:6px;}
+
+/* MODAL */
+.modal{
+    position:fixed;inset:0;z-index:100;display:none;
+    align-items:flex-end;justify-content:center;background:rgba(0,0,0,.65);
+}
+.modal.show{display:flex;}
+.modal-card{
+    width:100%;max-width:760px;background:#151512;
+    border-radius:22px 22px 0 0;padding:20px;border-top:1px solid var(--border);
+}
+.modal-title{font-size:18px;font-weight:bold;margin-bottom:14px;}
+.modal-close{
+    width:100%;padding:13px;border-radius:12px;
+    border:1px solid rgba(255,255,255,.08);background:#20201c;color:#eee;cursor:pointer;
+}
+
+/* RESPONSIVE */
+@media(max-width:480px){
+    .header-actions{gap:4px;}
+    .header-btn{width:36px;height:36px;font-size:15px;}
+    .message-bubble{max-width:84%;}
+    .language-bar{gap:6px;}
+    .language-select{font-size:11px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+    <!-- HEADER -->
+    <header class="chat-header">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back">‹</button>
+        <div class="avatar" id="headerAvatar">GT</div>
+        <div class="user-info">
+            <div class="user-name" id="peerName">Loading...</div>
+            <div class="user-status" id="peerStatus">Connecting...</div>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" id="callBtn" type="button" title="Voice Call">☎</button>
+            <button class="header-btn" id="infoBtn" type="button" title="Info">ⓘ</button>
+        </div>
+    </header>
+
+    <!-- LANGUAGE BAR -->
+    <div class="language-bar">
+        <div class="language-box">
+            <label class="language-label" for="myLanguage">मेरी भाषा</label>
+            <select id="myLanguage" class="language-select">
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="en">🇺🇸 English</option>
+                <option value="ar">🇸🇦 Arabic</option>
+                <option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option>
+                <option value="de">🇩🇪 German</option>
+            </select>
+        </div>
+        <div class="language-box">
+            <label class="language-label" for="targetLanguage">अनुवाद की भाषा</label>
+            <select id="targetLanguage" class="language-select">
+                <option value="en" selected>🇺🇸 English</option>
+                <option value="hi">🇮🇳 Hindi</option>
+                <option value="ar">🇸🇦 Arabic</option>
+                <option value="fr">🇫🇷 French</option>
+                <option value="es">🇪🇸 Spanish</option>
+                <option value="de">🇩🇪 German</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-area">
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <main class="messages" id="messages">
+        <div class="empty-chat" id="emptyChat">
+            <div class="empty-chat-icon">◎</div>
+            <div class="empty-chat-title">बातचीत शुरू करें</div>
+            <p>आपका पहला message यहां दिखाई देगा। भाषा चुनकर आसानी से बात करें।</p>
+        </div>
+    </main>
+
+    <!-- TYPING -->
+    <div class="typing" id="typingIndicator">
+        <div class="typing-bubble">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </div>
+</div>
+
+<!-- COMPOSER -->
+<div class="composer-wrap">
+    <div class="composer">
+        <button class="composer-btn" id="voiceBtn" type="button" title="बोलकर लिखें">🎤</button>
+        <textarea id="messageInput" class="message-input" rows="1" maxlength="2000" placeholder="Message लिखें..."></textarea>
+        <button class="send-btn" id="sendBtn" type="button" title="Send">➤</button>
+    </div>
+    <div class="composer-hint">Enter = Send • Shift + Enter = नई लाइन</div>
+</div>
+
+<!-- INFO MODAL -->
+<div class="modal" id="infoModal">
+    <div class="modal-card">
+        <div class="modal-title">Conversation Info</div>
+        <p id="infoText" style="color:#999;font-size:13px;line-height:1.6;margin-bottom:16px;">
+            GlobalTalk conversation
+        </p>
+        <button class="modal-close" id="closeInfoBtn" type="button">Close</button>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import {
+    getFirestore, doc, getDoc, setDoc, addDoc, collection,
+    query, orderBy, onSnapshot, serverTimestamp, updateDoc
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ===================== ELEMENTS ===================== */
+const backBtn = document.getElementById("backBtn");
+const peerNameEl = document.getElementById("peerName");
+const peerStatusEl = document.getElementById("peerStatus");
+const headerAvatar = document.getElementById("headerAvatar");
+const callBtn = document.getElementById("callBtn");
+const infoBtn = document.getElementById("infoBtn");
+const infoModal = document.getElementById("infoModal");
+const closeInfoBtn = document.getElementById("closeInfoBtn");
+const infoText = document.getElementById("infoText");
+const messagesEl = document.getElementById("messages");
+const emptyChat = document.getElementById("emptyChat");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const voiceBtn = document.getElementById("voiceBtn");
+const typingIndicator = document.getElementById("typingIndicator");
+const statusMessage = document.getElementById("statusMessage");
+const myLanguage = document.getElementById("myLanguage");
+const targetLanguage = document.getElementById("targetLanguage");
+
+/* ===================== STATE ===================== */
+const params = new URLSearchParams(window.location.search);
+const peerId = params.get("peer");
+const peerNameParam = params.get("peerName");
+
+let currentUser = null;
+let peerProfile = null;
+let conversationId = null;
+let stopMessagesListener = null;
+let sending = false;
+let recognition = null;
+let recording = false;
+
+/* ===================== LANGUAGE PERSISTENCE ===================== */
+try {
+    const savedMy = localStorage.getItem("globaltalk_my_language");
+    const savedTarget = localStorage.getItem("globaltalk_target_language");
+    if (savedMy) myLanguage.value = savedMy;
+    if (savedTarget) targetLanguage.value = savedTarget;
+} catch (e) {}
+
+myLanguage.addEventListener("change", () => {
+    try { localStorage.setItem("globaltalk_my_language", myLanguage.value); } catch (e) {}
+});
+targetLanguage.addEventListener("change", () => {
+    try { localStorage.setItem("globaltalk_target_language", targetLanguage.value); } catch (e) {}
+});
+
+/* ===================== HELPERS ===================== */
+function showStatus(text, type = "") {
+    statusMessage.textContent = text;
+    statusMessage.className = "status-message show " + type;
+}
+function hideStatus() {
+    statusMessage.textContent = "";
+    statusMessage.className = "status-message";
+}
+function escapeHTML(v) {
+    const d = document.createElement("div");
+    d.textContent = v ?? "";
+    return d.innerHTML;
+}
+function getInitial(n) {
+    return (n || "G").trim().charAt(0).toUpperCase() || "G";
+}
+function makeConversationId(a, b) {
+    return [a, b].sort().join("_");
+}
+function formatTime(timestamp) {
+    if (!timestamp) return "";
+    try {
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    } catch (e) { return ""; }
+}
+function scrollToBottom() {
+    requestAnimationFrame(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    });
+}
+function autoResizeTextarea() {
+    messageInput.style.height = "auto";
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 110) + "px";
+}
+
+/* ===================== TRANSLATION ===================== */
+async function translateText(text, targetLangCode) {
+    if (!text || !targetLangCode) return null;
+    try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|${targetLangCode}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        const translated = data?.responseData?.translatedText;
+        if (translated && translated.toLowerCase() !== text.toLowerCase()) {
+            return translated;
+        }
+        return null;
+    } catch (error) {
+        console.warn("Translation failed:", error);
+        return null;
+    }
+}
+
+/* ===================== LOAD PEER ===================== */
+async function loadPeerProfile() {
+    if (!peerId) {
+        peerNameEl.textContent = "User नहीं मिला";
+        peerStatusEl.textContent = "Invalid chat";
+        return;
+    }
+
+    // Prefer public_profiles
+    try {
+        const publicSnap = await getDoc(doc(db, "public_profiles", peerId));
+        if (publicSnap.exists()) {
+            peerProfile = { uid: peerId, ...publicSnap.data() };
+        }
+    } catch (e) {
+        console.warn("public_profiles error", e);
+    }
+
+    // Fallback to users collection
+    if (!peerProfile) {
+        try {
+            const userSnap = await getDoc(doc(db, "users", peerId));
+            if (userSnap.exists()) {
+                peerProfile = { uid: peerId, ...userSnap.data() };
+            }
+        } catch (e) {
+            console.warn("users collection error", e);
+        }
+    }
+
+    // Update UI
+    if (peerProfile) {
+        const displayName = peerProfile.username || peerProfile.displayName || peerNameParam || "User";
+        peerNameEl.textContent = "@" + displayName;
+        peerStatusEl.textContent = "Online";
+        peerStatusEl.classList.add("online");
+
+        if (peerProfile.photoURL && peerProfile.dpVisibility !== "private") {
+            headerAvatar.innerHTML = `<img src="${escapeHTML(peerProfile.photoURL)}" alt="avatar">`;
+        } else {
+            headerAvatar.textContent = getInitial(displayName);
+        }
+
+        // Auto-set target language from peer preference
+        if (peerProfile.preferredLanguage) {
+            const langMap = { Hindi: "hi", English: "en", Arabic: "ar", French: "fr", Spanish: "es", German: "de" };
+            const code = langMap[peerProfile.preferredLanguage];
+            if (code) targetLanguage.value = code;
+        }
+
+        infoText.innerHTML = `
+            <strong>Username:</strong> @${escapeHTML(displayName)}<br>
+            <strong>UID:</strong> ${escapeHTML(peerId)}<br>
+            <strong>Language:</strong> ${escapeHTML(peerProfile.preferredLanguage || "Not set")}
+        `;
+    } else {
+        peerNameEl.textContent = peerNameParam ? "@" + peerNameParam : "User";
+        peerStatusEl.textContent = "Profile not found";
+        headerAvatar.textContent = getInitial(peerNameParam || "U");
+        infoText.textContent = "Peer profile could not be loaded.";
+    }
+}
+
+/* ===================== CONVERSATION ===================== */
+async function ensureConversation() {
+    conversationId = makeConversationId(currentUser.uid, peerId);
+    const convRef = doc(db, "conversations", conversationId);
+    const convSnap = await getDoc(convRef);
+
+    if (!convSnap.exists()) {
+        await setDoc(convRef, {
+            participants: [currentUser.uid, peerId],
+            lastMessage: "",
+            lastMessageAt: serverTimestamp(),
+            createdAt: serverTimestamp()
+        });
+    }
+}
+
+/* ===================== MESSAGES LISTENER ===================== */
+function listenMessages() {
+    if (stopMessagesListener) stopMessagesListener();
+
+    const q = query(
+        collection(db, "conversations", conversationId, "messages"),
+        orderBy("createdAt", "asc")
+    );
+
+    stopMessagesListener = onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            emptyChat.style.display = "block";
+            messagesEl.innerHTML = "";
+            messagesEl.appendChild(emptyChat);
+            return;
+        }
+
+        emptyChat.style.display = "none";
+        messagesEl.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const isMine = data.senderId === currentUser.uid;
+
+            const row = document.createElement("div");
+            row.className = "message-row " + (isMine ? "mine" : "theirs");
+
+            const bubble = document.createElement("div");
+            bubble.className = "message-bubble";
+
+            let html = `<div class="message-text">${escapeHTML(data.originalText)}</div>`;
+
+            // Show translation only if it exists and is different
+            if (data.translatedText && data.translatedText !== data.originalText) {
+                html += `
+                    <div class="translation">
+                        <div class="translation-label">अनुवाद</div>
+                        ${escapeHTML(data.translatedText)}
+                    </div>`;
+            }
+
+            html += `<div class="message-meta">${formatTime(data.createdAt)}</div>`;
+
+            bubble.innerHTML = html;
+            row.appendChild(bubble);
+            messagesEl.appendChild(row);
+        });
+
+        scrollToBottom();
+    }, (error) => {
+        console.error("Messages listener error:", error);
+        showStatus("Messages लोड करने में समस्या आई", "error");
+    });
+}
+
+/* ===================== SEND MESSAGE ===================== */
+async function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text || !currentUser || !conversationId || sending) return;
+
+    sending = true;
+    sendBtn.disabled = true;
+    const originalText = text;
+    messageInput.value = "";
+    autoResizeTextarea();
+
+    try {
+        showStatus("भेज रहा है...", "");
+
+        const targetCode = targetLanguage.value;
+        const translated = await translateText(originalText, targetCode);
+
+        await addDoc(collection(db, "conversations", conversationId, "messages"), {
+            senderId: currentUser.uid,
+            originalText: originalText,
+            translatedText: translated || originalText,
+            sourceLang: myLanguage.value,
+            targetLang: targetCode,
+            createdAt: serverTimestamp()
+        });
+
+        await updateDoc(doc(db, "conversations", conversationId), {
+            lastMessage: originalText,
+            lastMessageAt: serverTimestamp(),
+            lastSenderId: currentUser.uid
+        });
+
+        hideStatus();
+    } catch (error) {
+        console.error("Send error:", error);
+        showStatus("Message भेजने में समस्या आई। फिर से कोशिश करें।", "error");
+        messageInput.value = originalText; // restore on failure
+    } finally {
+        sending = false;
+        sendBtn.disabled = false;
+        messageInput.focus();
+    }
+}
+
+/* ===================== VOICE TYPING ===================== */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    voiceBtn.addEventListener("click", () => {
+        if (recording) {
+            recognition.stop();
+            return;
+        }
+        const langMap = {
+            hi: "hi-IN", en: "en-US", ar: "ar-SA",
+            fr: "fr-FR", es: "es-ES", de: "de-DE"
+        };
+        recognition.lang = langMap[myLanguage.value] || "en-US";
+        try {
+            recognition.start();
+            recording = true;
+            voiceBtn.classList.add("recording");
+            showStatus("सुन रहा हूँ... बोलिए", "success");
+        } catch (e) {
+            showStatus("Voice recognition शुरू नहीं हो सका", "error");
+        }
+    });
+
+    recognition.addEventListener("result", (event) => {
+        const transcript = event.results[0][0].transcript;
+        messageInput.value += (messageInput.value ? " " : "") + transcript;
+        autoResizeTextarea();
+        hideStatus();
+    });
+
+    recognition.addEventListener("end", () => {
+        recording = false;
+        voiceBtn.classList.remove("recording");
+        hideStatus();
+    });
+
+    recognition.addEventListener("error", (e) => {
+        recording = false;
+        voiceBtn.classList.remove("recording");
+        if (e.error !== "aborted") {
+            showStatus("Voice error: " + e.error, "error");
+        } else {
+            hideStatus();
+        }
+    });
+} else {
+    voiceBtn.style.display = "none";
+}
+
+/* ===================== EVENTS ===================== */
+sendBtn.addEventListener("click", sendMessage);
+
+messageInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+messageInput.addEventListener("input", autoResizeTextarea);
+
+backBtn.addEventListener("click", () => {
+    if (history.length > 1) history.back();
+    else window.location.href = "dashboard.html";
+});
+
+callBtn.addEventListener("click", () => {
+    if (peerId) {
+        window.location.href = `call.html?peer=${peerId}&role=caller`;
+    }
+});
+
+infoBtn.addEventListener("click", () => infoModal.classList.add("show"));
+closeInfoBtn.addEventListener("click", () => infoModal.classList.remove("show"));
+infoModal.addEventListener("click", (e) => {
+    if (e.target === infoModal) infoModal.classList.remove("show");
+});
+
+/* ===================== AUTH + INIT ===================== */
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    currentUser = user;
+
+    if (!peerId) {
+        peerNameEl.textContent = "User नहीं मिला";
+        peerStatusEl.textContent = "Invalid link";
+        showStatus("Chat link गलत है। Peer ID missing है।", "error");
+        return;
+    }
+
+    try {
+        showStatus("Chat लोड हो रहा है...", "");
+        await loadPeerProfile();
+        await ensureConversation();
+        listenMessages();
+        hideStatus();
+        messageInput.focus();
+    } catch (error) {
+        console.error("Init error:", error);
+        showStatus("Chat शुरू करने में समस्या आई।", "error");
+    }
+});
+</script>
+</body>
+</html>

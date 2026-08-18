@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GlobalTalk - Create your account">
+<title>Signup - GlobalTalk</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+    --gold:#d4af37;
+    --gold-light:#f0d477;
+    --gold-dark:#8f711c;
+    --bg:#070707;
+    --card:#101010;
+    --text:#f5f5f5;
+    --muted:#8d8d8d;
+    --danger:#ff6b6b;
+    --success:#61d49a;
+    --border:rgba(255,255,255,.08);
+}
+
+html{min-height:100%;}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(212,175,55,.16), transparent 30%),
+        radial-gradient(circle at 100% 35%, rgba(212,175,55,.08), transparent 28%),
+        #070707;
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:25px 15px 45px;
+}
+
+.page{width:100%;max-width:470px;margin:auto;}
+
+/* Brand */
+.brand{text-align:center;margin:8px 0 25px;}
+.logo{
+    width:62px;height:62px;margin:0 auto 14px;border-radius:20px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--gold-light),var(--gold),var(--gold-dark));
+    color:#090909;font-size:27px;font-weight:900;
+    box-shadow:0 12px 35px rgba(212,175,55,.20);
+}
+.brand h1{font-size:31px;letter-spacing:.4px;}
+.brand h1 span{color:var(--gold);}
+.brand p{color:var(--muted);font-size:14px;margin-top:7px;}
+
+/* Card */
+.signup-card{
+    background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+    border:1px solid var(--border);
+    border-radius:26px;
+    padding:24px 20px 22px;
+    box-shadow:0 25px 70px rgba(0,0,0,.45);
+    backdrop-filter:blur(18px);
+}
+.card-heading{margin-bottom:22px;}
+.card-heading h2{font-size:22px;margin-bottom:6px;}
+.card-heading p{color:var(--muted);font-size:13px;line-height:1.5;}
+
+/* Form */
+.form-group{margin-bottom:16px;}
+.form-label{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:8px;font-size:13px;font-weight:bold;color:#dcdcdc;
+}
+.input-wrap{position:relative;}
+.input-icon{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    width:22px;color:#777;font-size:16px;pointer-events:none;
+}
+.form-input,.form-select{
+    width:100%;min-height:51px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:14px;outline:none;
+    background:#111;color:white;
+    padding:0 14px 0 44px;font-size:14px;
+    transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.form-select{padding-left:14px;appearance:auto;}
+.form-input::placeholder{color:#5f5f5f;}
+.form-input:focus,.form-select:focus{
+    border-color:rgba(212,175,55,.65);
+    background:#151515;
+    box-shadow:0 0 0 3px rgba(212,175,55,.08);
+}
+
+/* Password Toggle */
+.password-toggle{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    width:35px;height:35px;border:0;border-radius:10px;
+    background:transparent;color:#777;cursor:pointer;font-size:16px;
+}
+.password-toggle:hover{color:var(--gold);}
+.password-input{padding-right:52px;}
+
+/* Help + Strength */
+.help-text{color:#666;font-size:11px;line-height:1.5;margin-top:7px;}
+.password-strength{margin-top:8px;}
+.strength-bars{display:flex;gap:4px;}
+.strength-bar{height:4px;flex:1;border-radius:20px;background:#252525;transition:.25s;}
+.strength-text{display:block;margin-top:5px;color:#666;font-size:11px;}
+
+/* Country / Language */
+.select-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* Terms */
+.terms{
+    display:flex;gap:9px;margin:17px 0;
+    color:#777;font-size:12px;line-height:1.5;
+}
+.terms input{accent-color:var(--gold);margin-top:2px;flex-shrink:0;}
+.terms a{color:var(--gold);text-decoration:none;}
+
+/* Message */
+.message{
+    display:none;padding:12px 13px;border-radius:13px;
+    margin-bottom:15px;font-size:13px;line-height:1.5;
+}
+.message.show{display:block;}
+.message.error{
+    color:#ff9b9b;background:rgba(255,80,80,.07);
+    border:1px solid rgba(255,80,80,.18);
+}
+.message.success{
+    color:#7ce0ab;background:rgba(80,220,145,.07);
+    border:1px solid rgba(80,220,145,.18);
+}
+
+/* Button */
+.submit-btn{
+    width:100%;min-height:53px;border:0;border-radius:15px;
+    background:linear-gradient(135deg,var(--gold-light),var(--gold),#b38b20);
+    color:#080808;font-size:15px;font-weight:900;cursor:pointer;
+    box-shadow:0 10px 30px rgba(212,175,55,.17);
+    transition:transform .15s,box-shadow .15s,opacity .15s;
+}
+.submit-btn:hover{transform:translateY(-1px);box-shadow:0 14px 35px rgba(212,175,55,.25);}
+.submit-btn:active{transform:translateY(1px);}
+.submit-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+
+.loading-content{display:flex;align-items:center;justify-content:center;gap:9px;}
+.spinner{
+    width:17px;height:17px;
+    border:2px solid rgba(0,0,0,.25);border-top-color:#080808;
+    border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Login link */
+.login-box{
+    text-align:center;margin-top:20px;padding-top:20px;
+    border-top:1px solid rgba(255,255,255,.06);
+    color:#777;font-size:13px;
+}
+.login-box a{color:var(--gold);font-weight:bold;text-decoration:none;}
+.login-box a:hover{text-decoration:underline;}
+
+.footer{text-align:center;margin-top:20px;color:#4f4f4f;font-size:11px;}
+.footer span{color:#7a641f;}
+
+/* Mobile */
+@media(max-width:430px){
+    body{padding:18px 10px 35px;}
+    .signup-card{padding:21px 15px 19px;}
+    .brand h1{font-size:28px;}
+    .select-row{grid-template-columns:1fr;}
+}
+
+@media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+    <!-- Brand -->
+    <header class="brand">
+        <div class="logo">GT</div>
+        <h1>Global<span>Talk</span></h1>
+        <p>दुनिया से जुड़ें, अपनी भाषा में बात करें।</p>
+    </header>
+
+    <!-- Card -->
+    <main class="signup-card">
+
+        <div class="card-heading">
+            <h2>नया Account बनाएँ</h2>
+            <p>अपना GlobalTalk account बनाने के लिए नीचे की जानकारी भरें।</p>
+        </div>
+
+        <div id="message" class="message" aria-live="polite"></div>
+
+        <form id="signupForm" novalidate>
+
+            <!-- Name -->
+            <div class="form-group">
+                <label class="form-label" for="nameInput">आपका नाम</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input class="form-input" type="text" id="nameInput"
+                           placeholder="अपना नाम लिखें" autocomplete="name"
+                           maxlength="60" required>
+                </div>
+            </div>
+
+            <!-- Username -->
+            <div class="form-group">
+                <label class="form-label" for="usernameInput">Username</label>
+                <div class="input-wrap">
+                    <span class="input-icon">@</span>
+                    <input class="form-input" type="text" id="usernameInput"
+                           placeholder="जैसे sunil_123" autocomplete="username"
+                           minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+"
+                           autocapitalize="none" spellcheck="false" required>
+                </div>
+                <p class="help-text">3-20 characters • केवल a-z, 0-9 और _</p>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="emailInput">Email</label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉</span>
+                    <input class="form-input" type="email" id="emailInput"
+                           placeholder="आपका email address" autocomplete="email"
+                           maxlength="254" required>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label class="form-label" for="passwordInput">Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input class="form-input password-input" type="password" id="passwordInput"
+                           placeholder="कम से कम 8 characters" autocomplete="new-password"
+                           minlength="8" maxlength="128" required>
+                    <button type="button" class="password-toggle" data-target="passwordInput" aria-label="Password दिखाएँ">👁</button>
+                </div>
+
+                <div class="password-strength">
+                    <div class="strength-bars">
+                        <span class="strength-bar" id="bar1"></span>
+                        <span class="strength-bar" id="bar2"></span>
+                        <span class="strength-bar" id="bar3"></span>
+                        <span class="strength-bar" id="bar4"></span>
+                    </div>
+                    <span class="strength-text" id="strengthText">Password strength</span>
+                </div>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group">
+                <label class="form-label" for="confirmPasswordInput">Password फिर से दर्ज करें</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔐</span>
+                    <input class="form-input password-input" type="password" id="confirmPasswordInput"
+                           placeholder="Password दोबारा लिखें" autocomplete="new-password"
+                           minlength="8" maxlength="128" required>
+                    <button type="button" class="password-toggle" data-target="confirmPasswordInput" aria-label="Password दिखाएँ">👁</button>
+                </div>
+            </div>
+
+            <!-- Country + Language -->
+            <div class="select-row">
+                <div class="form-group">
+                    <label class="form-label" for="countryInput">Country</label>
+                    <select class="form-select" id="countryInput" required>
+                        <option value="">Country चुनें</option>
+                        <option value="India">🇮🇳 India</option>
+                        <option value="USA">🇺🇸 USA</option>
+                        <option value="UK">🇬🇧 UK</option>
+                        <option value="UAE">🇦🇪 UAE</option>
+                        <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+                        <option value="France">🇫🇷 France</option>
+                        <option value="Germany">🇩🇪 Germany</option>
+                        <option value="Spain">🇪🇸 Spain</option>
+                        <option value="Other">🌍 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="languageInput">भाषा</label>
+                    <select class="form-select" id="languageInput" required>
+                        <option value="">भाषा चुनें</option>
+                        <option value="Hindi">हिन्दी</option>
+                        <option value="English">English</option>
+                        <option value="Arabic">العربية</option>
+                        <option value="French">Français</option>
+                        <option value="Spanish">Español</option>
+                        <option value="German">Deutsch</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Terms -->
+            <label class="terms">
+                <input type="checkbox" id="termsInput" required>
+                <span>
+                    मैं GlobalTalk की
+                    <a href="terms.html" target="_blank">Terms</a> और
+                    <a href="privacy.html" target="_blank">Privacy Policy</a>
+                    से सहमत हूँ।
+                </span>
+            </label>
+
+            <!-- Submit -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Account बनाएँ
+            </button>
+        </form>
+
+        <div class="login-box">
+            पहले से Account है?
+            <a href="login.html">Login करें</a>
+        </div>
+    </main>
+
+    <div class="footer">
+        © 2026 <span>GlobalTalk</span>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, deleteUser } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const submitBtn = document.getElementById("submitBtn");
+const messageEl = document.getElementById("message");
+const passwordInput = document.getElementById("passwordInput");
+
+// ========== Message Helper ==========
+function showMessage(text, type = "error") {
+    messageEl.textContent = text;
+    messageEl.className = `message show ${type}`;
+    messageEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function hideMessage() {
+    messageEl.className = "message";
+    messageEl.textContent = "";
+}
+
+// ========== Password Show / Hide ==========
+document.querySelectorAll(".password-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-target");
+        const input = document.getElementById(targetId);
+        if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "🙈";
+        } else {
+            input.type = "password";
+            btn.textContent = "👁";
+        }
+    });
+});
+
+// ========== Password Strength ==========
+passwordInput.addEventListener("input", () => {
+    const val = passwordInput.value;
+    let score = 0;
+
+    if (val.length >= 8) score++;
+    if (/[a-z]/.test(val) && /[A-Z]/.test(val)) score++;
+    if (/\d/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+    const bars = [
+        document.getElementById("bar1"),
+        document.getElementById("bar2"),
+        document.getElementById("bar3"),
+        document.getElementById("bar4")
+    ];
+    const colors = ["#ff4d4d", "#ff9f43", "#feca57", "#1dd1a1"];
+    const texts = ["बहुत कमज़ोर", "कमज़ोर", "मध्यम", "मज़बूत"];
+
+    bars.forEach((bar, i) => {
+        bar.style.background = i < score ? colors[score - 1] : "#252525";
+    });
+
+    const strengthText = document.getElementById("strengthText");
+    strengthText.textContent = val.length === 0 ? "Password strength" : texts[score - 1] || "बहुत कमज़ोर";
+    strengthText.style.color = val.length === 0 ? "#666" : colors[score - 1] || "#ff4d4d";
+});
+
+// ========== Form Submit ==========
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideMessage();
+
+    const name = document.getElementById("nameInput").value.trim();
+    const usernameRaw = document.getElementById("usernameInput").value.trim();
+    const username = usernameRaw.toLowerCase();
+    const email = document.getElementById("emailInput").value.trim();
+    const password = document.getElementById("passwordInput").value;
+    const confirmPassword = document.getElementById("confirmPasswordInput").value;
+    const country = document.getElementById("countryInput").value;
+    const language = document.getElementById("languageInput").value;
+    const termsChecked = document.getElementById("termsInput").checked;
+
+    // Validation
+    if (!name) {
+        showMessage("कृपया अपना नाम लिखें।");
+        return;
+    }
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(usernameRaw)) {
+        showMessage("Username सिर्फ अंग्रेज़ी अक्षर, संख्या और underscore में 3-20 अक्षर का होना चाहिए।");
+        return;
+    }
+    if (password.length < 8) {
+        showMessage("Password कम से कम 8 अक्षर का होना चाहिए।");
+        return;
+    }
+    if (password !== confirmPassword) {
+        showMessage("Password मेल नहीं खा रहा।");
+        return;
+    }
+    if (!country) {
+        showMessage("कृपया Country चुनें।");
+        return;
+    }
+    if (!language) {
+        showMessage("कृपया भाषा चुनें।");
+        return;
+    }
+    if (!termsChecked) {
+        showMessage("कृपया Terms और Privacy Policy से सहमत हों।");
+        return;
+    }
+
+    // Loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<div class="loading-content"><div class="spinner"></div> Account बन रहा है...</div>`;
+
+    let createdUser = null;
+
+    try {
+        // Username check (outside transaction for early exit)
+        const usernameCheckRef = doc(db, "usernames", username);
+        const existingUsername = await getDoc(usernameCheckRef);
+        if (existingUsername.exists()) {
+            showMessage("यह Username पहले से लिया जा चुका है। कृपया दूसरा चुनें।");
+            resetButton();
+            return;
+        }
+
+        // Create Auth user
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        createdUser = userCredential.user;
+        const uid = createdUser.uid;
+
+        const counterRef = doc(db, "counters", "userIdCounter");
+
+        // Transaction
+        await runTransaction(db, async (transaction) => {
+            const usernameDoc = await transaction.get(usernameCheckRef);
+            if (usernameDoc.exists()) {
+                throw new Error("USERNAME_TAKEN");
+            }
+
+            const counterSnap = await transaction.get(counterRef);
+            let nextCount = 100001;
+            if (counterSnap.exists()) {
+                nextCount = (counterSnap.data().count || 100000) + 1;
+            }
+            const uniqueUserId = "GT" + nextCount;
+
+            transaction.set(counterRef, { count: nextCount });
+            transaction.set(usernameCheckRef, { uid: uid });
+
+            transaction.set(doc(db, "users", uid), {
+                uid: uid,
+                name: name,
+                email: email,
+                username: username,
+                uniqueUserId: uniqueUserId,
+                country: country,
+                preferredLanguage: language,
+                authProvider: "password",
+                emailVerified: false,
+                accountStatus: "active",
+                accountCreatedAt: serverTimestamp()
+            });
+
+            transaction.set(doc(db, "public_profiles", uid), {
+                uid: uid,
+                username: username,
+                uniqueUserId: uniqueUserId,
+                country: country,
+                preferredLanguage: language,
+                dpVisibility: "public",
+                photoURL: null,
+                searchable: true
+            });
+        });
+
+        // Send verification email (ignore if fails)
+        try {
+            await sendEmailVerification(createdUser);
+        } catch (e) {}
+
+        // Success
+        showMessage("Account सफलतापूर्वक बन गया! Dashboard पर जा रहे हैं...", "success");
+        setTimeout(() => {
+            window.location.href = "dashboard.html";
+        }, 1200);
+
+    } catch (error) {
+        console.error(error);
+
+        if (createdUser && error.message === "USERNAME_TAKEN") {
+            showMessage("यह Username अभी-अभी किसी और ने ले लिया। कृपया दूसरा चुनें।");
+            try { await deleteUser(createdUser); } catch (e) {}
+        } else if (error.code === "auth/email-already-in-use") {
+            showMessage("यह Email पहले से इस्तेमाल हो रहा है।")

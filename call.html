@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Call - GlobalTalk</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+    --bg:#080909;
+    --panel:#111313;
+    --panel2:#171919;
+    --gold:#d4af37;
+    --gold2:#f0d477;
+    --text:#f5f5f2;
+    --muted:#858985;
+    --green:#35d07f;
+    --red:#ff5f5f;
+    --border:rgba(212,175,55,.18);
+}
+html,body{width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,"Segoe UI",sans-serif;}
+body{min-height:100vh;overflow-x:hidden;}
+button,select{font:inherit;}
+button{-webkit-tap-highlight-color:transparent;}
+.app{width:100%;max-width:560px;min-height:100vh;margin:auto;padding-bottom:30px;}
+
+/* HEADER */
+.topbar{
+    position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;gap:13px;padding:15px 16px;
+    background:rgba(8,9,9,.94);backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+.back-btn{
+    width:43px;height:43px;border-radius:14px;
+    border:1px solid var(--border);background:#141616;color:var(--text);
+    font-size:27px;line-height:1;cursor:pointer;
+}
+.person{min-width:0;flex:1;}
+.person-name{font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.call-state{margin-top:4px;display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;}
+.state-dot{width:7px;height:7px;border-radius:50%;background:#777;}
+.state-dot.connected{background:var(--green);box-shadow:0 0 0 4px rgba(53,208,127,.08);}
+.state-dot.calling{background:var(--gold);animation:pulse 1.2s infinite;}
+.state-dot.error{background:var(--red);}
+@keyframes pulse{50%{opacity:.35;}}
+
+/* MAIN */
+.main{padding:20px 15px;}
+
+/* CALL CARD */
+.call-card{
+    position:relative;padding:25px 17px 20px;border-radius:28px;
+    background:radial-gradient(circle at 50% 0%,rgba(212,175,55,.13),transparent 42%),
+               linear-gradient(145deg,#161818,#0e1010);
+    border:1px solid var(--border);
+    box-shadow:0 25px 70px rgba(0,0,0,.35);
+}
+
+/* AVATAR */
+.avatar-wrap{display:flex;justify-content:center;margin-bottom:13px;}
+.avatar{
+    width:108px;height:108px;display:flex;align-items:center;justify-content:center;
+    border-radius:50%;background:linear-gradient(145deg,var(--gold2),#8d6c18);
+    color:#121212;font-size:38px;font-weight:800;
+    border:4px solid rgba(212,175,55,.28);
+    box-shadow:0 0 0 8px rgba(212,175,55,.05),0 18px 45px rgba(0,0,0,.35);
+    overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.call-title{text-align:center;font-size:22px;font-weight:800;}
+.call-subtitle{text-align:center;margin-top:6px;color:var(--muted);font-size:13px;}
+.timer{text-align:center;margin-top:14px;color:var(--gold2);font-size:14px;font-weight:700;letter-spacing:1px;}
+
+/* TRANSLATION PANEL */
+.translation-panel{
+    margin-top:22px;padding:15px;
+    background:rgba(255,255,255,.025);
+    border:1px solid rgba(255,255,255,.06);border-radius:20px;
+}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}
+.panel-title{font-size:14px;font-weight:800;}
+.translation-badge{
+    padding:5px 9px;border-radius:999px;font-size:10px;font-weight:800;
+    background:rgba(212,175,55,.12);color:var(--gold2);
+}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field label{display:block;margin-bottom:6px;color:#777b77;font-size:11px;}
+.field select{
+    width:100%;padding:12px 10px;border-radius:13px;
+    border:1px solid rgba(255,255,255,.08);outline:none;
+    background:#0c0e0e;color:#eee;font-size:13px;
+}
+
+/* TOGGLE */
+.translate-toggle{
+    margin-top:13px;width:100%;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;padding:13px;border-radius:15px;
+    border:1px solid rgba(255,255,255,.07);background:#0c0e0e;
+    cursor:pointer;color:var(--text);
+}
+.toggle-info{text-align:left;}
+.toggle-title{font-size:13px;font-weight:800;}
+.toggle-desc{margin-top:4px;color:#777;font-size:11px;}
+.switch{position:relative;width:48px;height:27px;flex:0 0 48px;border-radius:99px;background:#343737;transition:.2s;}
+.switch::after{content:"";position:absolute;width:21px;height:21px;top:3px;left:3px;border-radius:50%;background:#eee;transition:.2s;}
+.translate-toggle.on .switch{background:var(--gold);}
+.translate-toggle.on .switch::after{left:24px;background:#111;}
+
+/* TEXT BOXES */
+.text-section{margin-top:16px;}
+.text-box{
+    min-height:82px;padding:13px;margin-top:9px;border-radius:15px;
+    background:#0b0d0d;border:1px solid rgba(255,255,255,.06);
+}
+.text-label{color:#777b77;font-size:11px;}
+.text-value{margin-top:8px;color:#eee;line-height:1.5;font-size:14px;word-break:break-word;}
+.text-placeholder{color:#555;}
+
+/* CONTROLS */
+.controls{margin-top:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.control-btn{
+    min-height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.08);
+    background:#171919;color:#eee;font-size:12px;font-weight:800;cursor:pointer;
+}
+.control-btn.active{border-color:rgba(212,175,55,.35);color:var(--gold2);}
+.end-btn{
+    width:100%;margin-top:12px;min-height:54px;border:none;border-radius:17px;
+    background:linear-gradient(135deg,#ff5d5d,#bd2f38);color:#fff;
+    font-size:15px;font-weight:800;cursor:pointer;
+    box-shadow:0 10px 30px rgba(255,70,70,.15);
+}
+
+/* NOTICE */
+.notice{
+    margin-top:15px;padding:12px 13px;border-radius:14px;
+    background:#0d0f0f;border:1px solid rgba(255,255,255,.05);
+    color:#888;font-size:11px;line-height:1.5;text-align:center;
+}
+
+/* LOADING */
+.loading{
+    position:fixed;inset:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:25px;
+    background:radial-gradient(circle at center,rgba(212,175,55,.08),transparent 45%),#080909;
+}
+.loading.hidden{display:none;}
+.loading-box{
+    width:100%;max-width:340px;padding:30px 22px;border-radius:25px;
+    background:#111313;border:1px solid var(--border);text-align:center;
+}
+.spinner{
+    width:43px;height:43px;margin:0 auto 17px;border-radius:50%;
+    border:3px solid rgba(212,175,55,.15);border-top-color:var(--gold);
+    animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-title{font-size:17px;font-weight:800;}
+.loading-text{margin-top:8px;color:#777;font-size:12px;line-height:1.5;}
+.loading-error{margin-top:15px;display:none;color:#ff8585;font-size:12px;line-height:1.5;}
+.loading-action{
+    display:none;margin-top:15px;width:100%;padding:12px;border:none;
+    border-radius:13px;background:var(--gold);color:#111;font-weight:800;cursor:pointer;
+}
+
+audio{display:none;}
+
+@media(max-width:390px){
+    .main{padding:15px 11px;}
+    .call-card{padding:21px 13px 17px;border-radius:24px;}
+    .controls{gap:7px;}
+    .control-btn{font-size:11px;padding:6px;}
+    .avatar{width:94px;height:94px;font-size:32px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div id="loading" class="loading">
+    <div class="loading-box">
+        <div class="spinner"></div>
+        <div class="loading-title">GlobalTalk Call</div>
+        <div id="loadingText" class="loading-text">Call तैयार की जा रही है...</div>
+        <div id="loadingError" class="loading-error"></div>
+        <button id="retryBtn" class="loading-action">फिर से कोशिश करें</button>
+    </div>
+</div>
+
+<div class="app">
+    <header class="topbar">
+        <button id="backBtn" class="back-btn" type="button" aria-label="Back">‹</button>
+        <div class="person">
+            <div id="topPeerName" class="person-name">User</div>
+            <div class="call-state">
+                <span id="stateDot" class="state-dot calling"></span>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="call-card">
+            <div class="avatar-wrap">
+                <div id="avatar" class="avatar">U</div>
+            </div>
+            <div id="peerName" class="call-title">User</div>
+            <div class="call-subtitle">GlobalTalk secure audio call</div>
+            <div id="timer" class="timer">00:00</div>
+
+            <!-- TRANSLATION PANEL -->
+            <section class="translation-panel">
+                <div class="panel-heading">
+                    <div class="panel-title">🌐 Live Translation</div>
+                    <div id="translationBadge" class="translation-badge">ON</div>
+                </div>
+
+                <div class="lang-grid">
+                    <div class="field">
+                        <label>मैं बोलूंगा</label>
+                        <select id="myLang">
+                            <option value="hi-IN|hi">हिन्दी</option>
+                            <option value="en-US|en" selected>English</option>
+                            <option value="ar-SA|ar">العربية</option>
+                            <option value="fr-FR|fr">Français</option>
+                            <option value="es-ES|es">Español</option>
+                            <option value="de-DE|de">Deutsch</option>
+                            <option value="pt-BR|pt">Português</option>
+                            <option value="ru-RU|ru">Русский</option>
+                            <option value="ja-JP|ja">日本語</option>
+                            <option value="ko-KR|ko">한국어</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Translate में</label>
+                        <select id="targetLang">
+                            <option value="en-US|en">English</option>
+                            <option value="hi-IN|hi" selected>हिन्दी</option>
+                            <option value="ar-SA|ar">العربية</option>
+                            <option value="fr-FR|fr">Français</option>
+                            <option value="es-ES|es">Español</option>
+                            <option value="de-DE|de">Deutsch</option>
+                            <option value="pt-BR|pt">Português</option>
+                            <option value="ru-RU|ru">Русский</option>
+                            <option value="ja-JP|ja">日本語</option>
+                            <option value="ko-KR|ko">한국어</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="translationToggle" class="translate-toggle on" type="button">
+                    <div class="toggle-info">
+                        <div class="toggle-title">Live Translation</div>
+                        <div class="toggle-desc" id="toggleDescription">बात करते समय translation चालू है</div>
+                    </div>
+                    <div class="switch"></div>
+                </button>
+            </section>
+
+            <!-- MY SPEECH -->
+            <section class="text-section">
+                <div class="text-label">🎤 मेरी आवाज़</div>
+                <div class="text-box">
+                    <div id="myTranscript" class="text-value text-placeholder">अभी कुछ बोला नहीं गया...</div>
+                </div>
+            </section>
+
+            <!-- PEER TRANSLATION (shown via TTS + text) -->
+            <section class="text-section">
+                <div class="text-label">🌍 अनुवादित पाठ</div>
+                <div class="text-box">
+                    <div id="translatedText" class="text-value text-placeholder">Translation यहां दिखाई देगा...</div>
+                </div>
+            </section>
+
+            <!-- CONTROLS -->
+            <div class="controls">
+                <button id="micBtn" class="control-btn active" type="button">🎤 Mic ON</button>
+                <button id="speakBtn" class="control-btn active" type="button">🔊 Voice ON</button>
+                <button id="speakerBtn" class="control-btn active" type="button">🔈 Speaker</button>
+            </div>
+
+            <button id="endCallBtn" class="end-btn" type="button">☎ कॉल समाप्त करें</button>
+
+            <div id="notice" class="notice">
+                Call connect होने के बाद आप बात कर सकते हैं। Translation को ऊपर से कभी भी ON/OFF किया जा सकता है।
+            </div>
+        </section>
+    </main>
+</div>
+
+<audio id="remoteAudio" autoplay playsinline></audio>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import {
+    getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot,
+    collection, addDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ===================== ELEMENTS ===================== */
+const loading = document.getElementById("loading");
+const loadingText = document.getElementById("loadingText");
+const loadingError = document.getElementById("loadingError");
+const retryBtn = document.getElementById("retryBtn");
+const statusText = document.getElementById("statusText");
+const stateDot = document.getElementById("stateDot");
+const topPeerName = document.getElementById("topPeerName");
+const peerNameEl = document.getElementById("peerName");
+const avatar = document.getElementById("avatar");
+const remoteAudio = document.getElementById("remoteAudio");
+const myLang = document.getElementById("myLang");
+const targetLang = document.getElementById("targetLang");
+const myTranscript = document.getElementById("myTranscript");
+const translatedText = document.getElementById("translatedText");
+const translationToggle = document.getElementById("translationToggle");
+const translationBadge = document.getElementById("translationBadge");
+const toggleDescription = document.getElementById("toggleDescription");
+const micBtn = document.getElementById("micBtn");
+const speakBtn = document.getElementById("speakBtn");
+const speakerBtn = document.getElementById("speakerBtn");
+const endCallBtn = document.getElementById("endCallBtn");
+const backBtn = document.getElementById("backBtn");
+const timerEl = document.getElementById("timer");
+const notice = document.getElementById("notice");
+
+/* ===================== URL PARAMS ===================== */
+const params = new URLSearchParams(window.location.search);
+const peerId = params.get("peer");
+const role = params.get("role") || "caller";
+let callId = params.get("callId");
+const peerNameParam = params.get("peerName") || "User";
+const peerPhotoParam = params.get("photo") || "";
+
+/* ===================== STATE ===================== */
+let currentUser = null;
+let pc = null;
+let localStream = null;
+let recognition = null;
+let isListening = false;
+let isTranslationOn = true;
+let isSpeechOn = true;      // TTS on/off
+let isMicOn = true;
+let callStartedAt = null;
+let timerInterval = null;
+let unsubscribeCall = null;
+let unsubscribeCandidates = null;
+let stopped = false;
+
+const servers = {
+    iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" },
+        { urls: "stun:stun2.l.google.com:19302" }
+    ]
+};
+
+/* ===================== HELPERS ===================== */
+function escapeHTML(v) {
+    const d = document.createElement("div");
+    d.textContent = v ?? "";
+    return d.innerHTML;
+}
+function getInitial(n) {
+    return (n || "U").trim().charAt(0).toUpperCase() || "U";
+}
+function setStatus(text, type = "calling") {
+    statusText.textContent = text;
+    stateDot.className = "state-dot " + type;
+}
+function hideLoading() {
+    loading.classList.add("hidden");
+}
+function showLoadingError(msg) {
+    loadingText.textContent = "समस्या आई";
+    loadingError.style.display = "block";
+    loadingError.textContent = msg;
+    retryBtn.style.display = "block";
+}
+function startTimer() {
+    callStartedAt = Date.now();
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartedAt) / 1000);
+        const m = String(Math.floor(elapsed / 60)).padStart(2, "0");
+        const s = String(elapsed % 60).padStart(2, "0");
+        timerEl.textContent = `${m}:${s}`;
+    }, 1000);
+}
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+/* ===================== TRANSLATION ===================== */
+async function translateText(text, targetCode) {
+    if (!text || !targetCode) return text;
+    try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=auto|${targetCode}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data?.responseData?.translatedText || text;
+    } catch (e) {
+        console.warn("Translate failed", e);
+        return text;
+    }
+}
+
+function speakText(text, langCode) {
+    if (!isSpeechOn || !text) return;
+    try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = langCode || "en-US";
+        u.rate = 1;
+        window.speechSynthesis.speak(u);
+    } catch (e) {}
+}
+
+/* ===================== SPEECH RECOGNITION ===================== */
+function getSpeechLang() {
+    return (myLang.value || "en-US|en").split("|")[0];
+}
+function getTargetCode() {
+    return (targetLang.value || "hi-IN|hi").split("|")[1];
+}
+function getTargetSpeechLang() {
+    return (targetLang.value || "hi-IN|hi").split("|")[0];
+}
+
+function setupSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        notice.textContent = "इस ब्राउज़र में Voice recognition उपलब्ध नहीं है।";
+        return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = getSpeechLang();
+
+    recognition.onresult = async (event) => {
+        if (!isTranslationOn || stopped) return;
+
+        const last = event.results[event.results.length - 1];
+        const transcript = last[0].transcript.trim();
+        if (!transcript) return;
+
+        myTranscript.textContent = transcript;
+        myTranscript.classList.remove("text-placeholder");
+
+        const targetCode = getTargetCode();
+        const translated = await translateText(transcript, targetCode);
+
+        translatedText.textContent = translated;
+        translatedText.classList.remove("text-placeholder");
+
+        // Speak the translation so the other person can hear it in their language
+        // (This is a simple approach; true dual-language requires both sides running recognition)
+        speakText(translated, getTargetSpeechLang());
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        if (!stopped && pc && pc.connectionState !== "closed" && isMicOn) {
+            try {
+                recognition.lang = getSpeechLang();
+                recognition.start();
+                isListening = true;
+            } catch (e) {}
+        }
+    };
+
+    recognition.onerror = (e) => {
+        console.warn("Speech error:", e.error);
+        if (e.error === "not-allowed") {
+            notice.textContent = "Microphone की अनुमति नहीं मिली।";
+        }
+    };
+
+    try {
+        recognition.start();
+        isListening = true;
+    } catch (e) {}
+}
+
+function stopSpeechRecognition() {
+    if (recognition) {
+        try { recognition.stop(); } catch (e) {}
+        isListening = false;
+    }
+}
+
+/* ===================== PEER PROFILE ===================== */
+async function loadPeerProfile() {
+    topPeerName.textContent = "@" + peerNameParam;
+    peerNameEl.textContent = "@" + peerNameParam;
+    avatar.textContent = getInitial(peerNameParam);
+
+    if (peerPhotoParam) {
+        avatar.innerHTML = `<img src="${escapeHTML(peerPhotoParam)}" alt="avatar">`;
+    }
+
+    try {
+        const snap = await getDoc(doc(db, "public_profiles", peerId));
+        if (snap.exists()) {
+            const data = snap.data();
+            const name = data.username || data.displayName || peerNameParam;
+            topPeerName.textContent = "@" + name;
+            peerNameEl.textContent = "@" + name;
+
+            if (data.photoURL && data.dpVisibility !== "private") {
+                avatar.innerHTML = `<img src="${escapeHTML(data.photoURL)}" alt="avatar">`;
+            } else {
+                avatar.textContent = getInitial(name);
+            }
+        }
+    } catch (e) {
+        console.warn("Peer profile load failed", e);
+    }
+}
+
+/* ===================== WEBRTC ===================== */
+async function createPeerConnection() {
+    pc = new RTCPeerConnection(servers);
+
+    localStream.getTracks().forEach(track => {
+        pc.addTrack(track, localStream);
+    });
+
+    pc.ontrack = (event) => {
+        remoteAudio.srcObject = event.streams[0];
+        setStatus("Connected", "connected");
+        startTimer();
+        hideLoading();
+        notice.textContent = "कॉल जुड़ गई। अब आप बात कर सकते हैं।";
+    };
+
+    pc.onconnectionstatechange = () => {
+        const state = pc.connectionState;
+        if (state === "connected") {
+            setStatus("Connected", "connected");
+        } else if (state === "failed" || state === "disconnected") {
+            setStatus("Connection lost", "error");
+            notice.textContent = "कनेक्शन टूट गया।";
+        } else if (state === "closed") {
+            setStatus("Call ended", "error");
+        }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+        console.log("ICE state:", pc.iceConnectionState);
+    };
+}
+
+async function setupAsCaller() {
+    const callRef = doc(collection(db, "calls"));
+    callId = callRef.id;
+
+    const candidatesCol = collection(db, "calls", callId, "callerCandidates");
+
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            addDoc(candidatesCol, event.candidate.toJSON()).catch(console.warn);
+        }
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    await setDoc(callRef, {
+        callerId: currentUser.uid,
+        calleeId: peerId,
+        offer: { type: offer.type, sdp: offer.sdp },
+        status: "calling",
+        createdAt: Date.now()
+    });
+
+    setStatus("Calling...", "calling");
+    loadingText.textContent = "कॉल की जा रही है...";
+
+    // Listen for answer
+    unsubscribeCall = onSnapshot(callRef, async (snap) => {
+        const data = snap.data();
+        if (!data) return;
+
+        if (data.answer && !pc.currentRemoteDescription) {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+        if (data.status === "ended") {
+            endCall(false);
+        }
+    });
+
+    // Listen for callee ICE candidates
+    unsubscribeCandidates = onSnapshot(
+        collection(db, "calls", callId, "calleeCandidates"),
+        (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const c = change.doc.data();
+                    pc.addIceCandidate(new RTCIceCandidate(c)).catch(console.warn);
+                }
+            });
+        }
+    );
+}
+
+async function setupAsCallee() {
+    if (!callId) {
+        showLoadingError("Call ID नहीं मिली।");
+        return;
+    }
+
+    const callRef = doc(db, "calls", callId);
+    const candidatesCol = collection(db, "calls", callId, "calleeCandidates");
+
+    pc.onicecandidate = (event) => {
+        if (event.candidate) {
+            addDoc(candidatesCol, event.candidate.toJSON()).catch(console.warn);
+        }
+    };
+
+    const callSnap = await getDoc(callRef);
+    const callData = callSnap.data();
+
+    if (!callData || !callData.offer) {
+        showLoadingError("यह कॉल अब उपलब्ध नहीं है।");
+        return;
+    }
+
+    await pc.setRemoteDescription(new RTCSessionDescription(callData.offer));
+
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    await updateDoc(callRef, {
+        answer: { type: answer.type, sdp: answer.sdp },
+        status: "connected"
+    });
+
+    setStatus("Connecting...", "calling");
+    loadingText.textContent = "कॉल जुड़ रही है...";
+
+    // Listen for caller ICE candidates
+    unsubscribeCandidates = onSnapshot(
+        collection(db, "calls", callId, "callerCandidates"),
+        (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const c = change.doc.data();
+                    pc.addIceCandidate(new RTCIceCandidate(c)).catch(console.warn);
+                }
+            });
+        }
+    );
+
+    // Listen for end
+    unsubscribeCall = onSnapshot(callRef, (snap) => {
+        const data = snap.data();
+        if (data?.status === "ended") {
+            endCall(false);
+        }
+    });
+}
+
+/* ===================== START CALL ===================== */
+async function startCall() {
+    if (!peerId) {
+        showLoadingError("Peer ID नहीं मिली।");
+        return;
+    }
+
+    try {
+        loadingText.textContent = "Microphone की अनुमति मांगी जा रही है...";
+        localStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true
+            },
+            video: false
+        });
+    } catch (err) {
+        showLoadingError("Microphone की अनुमति चाहिए। Settings से allow करें।");
+        return;
+    }
+
+    try {
+        await createPeerConnection();
+
+        if (role === "caller") {
+            await setupAsCaller();
+        } else {
+            await setupAsCallee();
+        }
+
+        setupSpeechRecognition();
+
+        // Auto-hide loading after a short time if already connected
+        setTimeout(() => {
+            if (pc && (pc.connectionState === "connected" || pc.iceConnectionState === "connected")) {
+                hideLoading();
+            }
+        }, 8000);
+
+    } catch (err) {
+        console.error(err);
+        showLoadingError("Call शुरू करने में समस्या: " + (err.message || "Unknown error"));
+    }
+}
+
+/* ===================== END CALL ===================== */
+async function endCall(updateFirestore = true) {
+    if (stopped) return;
+    stopped = true;
+
+    stopSpeechRecognition();
+    stopTimer();
+    window.speechSynthesis.cancel();
+
+    if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+    }
+    if (pc) {
+        pc.close();
+        pc = null;
+    }
+    if (unsubscribeCall) unsubscribeCall();
+    if (unsubscribeCandidates) unsubscribeCandidates();
+
+    if (updateFirestore && callId) {
+        try {
+            await updateDoc(doc(db, "calls", callId), { status: "ended" });
+            setTimeout(() => {
+                deleteDoc(doc(db, "calls", callId)).catch(() => {});
+            }, 4000);
+        } catch (e) {}
+    }
+
+    window.location.href = "dashboard.html";
+}
+
+/* ===================== CONTROLS ===================== */
+micBtn.addEventListener("click", () => {
+    if (!localStream) return;
+    isMicOn = !isMicOn;
+    localStream.getAudioTracks().forEach(t => t.enabled = isMicOn);
+    micBtn.classList.toggle("active", isMicOn);
+    micBtn.textContent = isMicOn ? "🎤 Mic ON" : "🔇 Mic OFF";
+
+    if (isMicOn && !isListening && recognition) {
+        try {
+            recognition.lang = getSpeechLang();
+            recognition.start();
+            isListening = true;
+        } catch (e) {}
+    } else if (!isMicOn) {
+        stopSpeechRecognition();
+    }
+});
+
+speakBtn.addEventListener("click", () => {
+    isSpeechOn = !isSpeechOn;
+    speakBtn.classList.toggle("active", isSpeechOn);
+    speakBtn.textContent = isSpeechOn ? "🔊 Voice ON" : "🔇 Voice OFF";
+    if (!isSpeechOn) window.speechSynthesis.cancel();
+});
+
+speakerBtn.addEventListener("click", () => {
+    remoteAudio.muted = !remoteAudio.muted;
+    speakerBtn.classList.toggle("active", !remoteAudio.muted);
+    speakerBtn.textContent = remoteAudio.muted ? "🔇 Speaker" : "🔈 Speaker";
+});
+
+translationToggle.addEventListener("click", () => {
+    isTranslationOn = !isTranslationOn;
+    translationToggle.classList.toggle("on", isTranslationOn);
+    translationBadge.textContent = isTranslationOn ? "ON" : "OFF";
+    toggleDescription.textContent = isTranslationOn
+        ? "बात करते समय translation चालू है"
+        : "Translation बंद है";
+});
+
+myLang.addEventListener("change", () => {
+    if (recognition && isListening) {
+        try {
+            recognition.stop();
+            recognition.lang = getSpeechLang();
+            setTimeout(() => {
+                if (!stopped && isMicOn) {
+                    try { recognition.start(); isListening = true; } catch (e) {}
+                }
+            }, 300);
+        } catch (e) {}
+    }
+});
+
+endCallBtn.addEventListener("click", () => endCall(true));
+backBtn.addEventListener("click", () => endCall(true));
+
+retryBtn.addEventListener("click", () => {
+    loadingError.style.display = "none";
+    retryBtn.style.display = "none";
+    loadingText.textContent = "फिर से कोशिश हो रही है...";
+    stopped = false;
+    startCall();
+});
+
+/* ===================== INIT ===================== */
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+    currentUser = user;
+
+    await loadPeerProfile();
+    await startCall();
+});
+</script>
+</body>
+</html>

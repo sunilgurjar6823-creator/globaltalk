@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - GlobalTalk</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{min-height:100vh;background:#080808;color:#f5f5f5;font-family:Arial,Helvetica,sans-serif;padding-bottom:90px;}
+.app{width:100%;max-width:700px;margin:auto;}
+.header{position:sticky;top:0;z-index:10;padding:18px;background:rgba(8,8,8,.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06);}
+.brand{display:flex;justify-content:space-between;align-items:center;}
+.brand h1{font-size:24px;}
+.brand h1 span{color:#d4af37;}
+.header-icons{display:flex;gap:10px;}
+.icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(212,175,55,.3);background:#151512;color:#d4af37;cursor:pointer;font-size:17px;}
+.content{padding:18px 16px;}
+.empty-state{text-align:center;padding:60px 20px;color:#777;border:1px solid rgba(255,255,255,.06);border-radius:16px;background:#101010;}
+.empty-icon{font-size:38px;margin-bottom:12px;}
+.empty-state h3{color:#aaa;margin-bottom:6px;font-size:16px;}
+.empty-state button{margin-top:14px;background:#d4af37;color:#111;border:none;padding:10px 20px;border-radius:20px;font-weight:bold;cursor:pointer;}
+.chat-item{display:flex;align-items:center;gap:13px;padding:14px;margin-bottom:10px;background:linear-gradient(145deg,#131311,#0c0c0b);border:1px solid rgba(255,255,255,.06);border-radius:16px;cursor:pointer;}
+.avatar{width:50px;height:50px;flex:0 0 50px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#7d621b);display:flex;align-items:center;justify-content:center;color:#111;font-weight:bold;overflow:hidden;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.chat-info{flex:1;min-width:0;}
+.chat-name{font-weight:bold;font-size:15px;}
+.chat-last{color:#888;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#incomingCallBox{display:none;margin-bottom:16px;padding:16px;background:#151512;border-radius:14px;border:1px solid #d4af37;}
+#incomingCallBox button{padding:9px 16px;border-radius:16px;border:none;margin-right:8px;font-weight:bold;cursor:pointer;}
+.accept-call{background:#2ecc71;color:#fff;}
+.reject-call{background:#e74c3c;color:#fff;}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:700px;height:72px;background:rgba(14,14,14,.96);backdrop-filter:blur(15px);border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:space-around;align-items:center;}
+.nav-item{color:#666;text-decoration:none;text-align:center;font-size:11px;min-width:65px;}
+.nav-item .icon{display:block;font-size:21px;margin-bottom:4px;}
+.nav-item.active{color:#d4af37;}
+</style>
+</head>
+<body>
+<div class="app">
+    <header class="header">
+        <div class="brand">
+            <h1>Global<span>Talk</span></h1>
+            <div class="header-icons">
+                <button class="icon-btn" onclick="window.location.href='contacts.html'">🔍</button>
+                <button class="icon-btn" onclick="window.location.href='profile.html'">👤</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="content">
+        <div id="incomingCallBox">
+            <p id="incomingCallText" style="margin-bottom:10px;font-weight:bold;"></p>
+            <button class="accept-call" id="acceptCallBtn">Accept करें</button>
+            <button class="reject-call" id="rejectCallBtn">Reject करें</button>
+        </div>
+
+        <div id="chatsList"></div>
+
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">💬</div>
+            <h3>अभी कोई Chat नहीं है</h3>
+            <p>Contacts में जाकर लोगों से जुड़ें और बातचीत शुरू करें।</p>
+            <button onclick="window.location.href='contacts.html'">Contacts खोलें</button>
+        </div>
+    </main>
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item active"><span class="icon">◉</span>Chats</a>
+    <a href="contacts.html" class="nav-item"><span class="icon">♧</span>Contacts</a>
+    <a href="dashboard.html" class="nav-item"><span class="icon">⌕</span>Calls</a>
+    <a href="profile.html" class="nav-item"><span class="icon">●</span>Profile</a>
+</nav>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBJ6vV2U7-G_H0eVa-i811zaVnTNidXV9M",
+    authDomain: "globaltalk-87e19.firebaseapp.com",
+    projectId: "globaltalk-87e19",
+    storageBucket: "globaltalk-87e19.firebasestorage.app",
+    messagingSenderId: "223736450793",
+    appId: "1:223736450793:web:a32824db8c4434bd1aaa78"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const chatsList = document.getElementById("chatsList");
+const emptyState = document.getElementById("emptyState");
+const incomingCallBox = document.getElementById("incomingCallBox");
+const incomingCallText = document.getElementById("incomingCallText");
+
+let currentUser = null;
+let currentIncomingCallId = null;
+let currentCallerId = null;
+
+function escapeHTML(v) { const d = document.createElement("div"); d.textContent = v ?? ""; return d.innerHTML; }
+function getInitial(n) { return (n || "G").trim().charAt(0).toUpperCase(); }
+
+onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location.href = "login.html"; return; }
+    currentUser = user;
+    listenConversations(user.uid);
+    listenIncomingCalls(user.uid);
+});
+
+function listenConversations(myUid) {
+    const q = query(
+        collection(db, "conversations"),
+        where("participants", "array-contains", myUid),
+        orderBy("lastMessageAt", "desc")
+    );
+
+    onSnapshot(q, async (snapshot) => {
+        chatsList.innerHTML = "";
+        if (snapshot.empty) {
+            emptyState.style.display = "block";
+            return;
+        }
+        emptyState.style.display = "none";
+
+        for (const docSnap of snapshot.docs) {
+            const data = docSnap.data();
+            const otherUid = data.participants.find(p => p !== myUid);
+            if (!otherUid) continue;
+
+            const profileSnap = await getDoc(doc(db, "public_profiles", otherUid));
+            const profile = profileSnap.exists() ? profileSnap.data() : { username: "User" };
+
+            const item = document.createElement("div");
+            item.className = "chat-item";
+
+            const avatar = document.createElement("div");
+            avatar.className = "avatar";
+            if (profile.photoURL && profile.dpVisibility === "public") {
+                const img = document.createElement("img");
+                img.src = profile.photoURL;
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = getInitial(profile.username);
+            }
+
+            const info = document.createElement("div");
+            info.className = "chat-info";
+            info.innerHTML = `
+                <div class="chat-name">@${escapeHTML(profile.username || "")}</div>
+                <div class="chat-last">${escapeHTML(data.lastMessage || "बातचीत शुरू करें")}</div>
+            `;
+
+            item.appendChild(avatar);
+            item.appendChild(info);
+            item.addEventListener("click", () => {
+                window.location.href = "chat.html?peer=" + otherUid;
+            });
+
+            chatsList.appendChild(item);
+        }
+    }, () => { emptyState.style.display = "block"; });
+}
+
+function listenIncomingCalls(myUid) {
+    const q = query(collection(db, "calls"), where("calleeId", "==", myUid), where("status", "==", "calling"));
+    onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            incomingCallBox.style.display = "none";
+            currentIncomingCallId = null;
+            return;
+        }
+        const callDoc = snapshot.docs[0];
+        currentIncomingCallId = callDoc.id;
+        currentCallerId = callDoc.data().callerId;
+        incomingCallText.textContent = "किसी की कॉल आ रही है...";
+        incomingCallBox.style.display = "block";
+    });
+}
+
+document.getElementById("acceptCallBtn").addEventListener("click", () => {
+    if (!currentCallerId) return;
+    window.location.href = "call.html?peer=" + currentCallerId + "&role=callee&callId=" + currentIncomingCallId;
+});
+
+document.getElementById("rejectCallBtn").addEventListener("click", async () => {
+    if (!currentIncomingCallId) return;
+    try { await deleteDoc(doc(db, "calls", currentIncomingCallId)); } catch (e) {}
+    incomingCallBox.style.display = "none";
+});
+</script>
+</body>
+</html>
